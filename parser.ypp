@@ -117,7 +117,7 @@
 %token TRUE
 %token FALSE
 %token RETURN
-%token IF
+
 %token WHILE
 %token BREAK
 %token CONTINUE
@@ -139,7 +139,13 @@
 %type<argument_list> FormalsList
 %type<argument_list> Formals
 %type<argument_list> ExpList
-
+%type<label> MarkInIf;
+%type<label> M;
+%type<block> N;
+%type<block> Statement;
+%type<block> Statements;
+%type<scope> IfScope;
+%type<scope> ElseScope;
 
 %right ASSIGN
 %left OR
@@ -159,15 +165,10 @@
 %right NOT
 %nonassoc RPAREN
 %nonassoc LPAREN
+%nonassoc IF
 %nonassoc ELSE
 
-%type<label> MarkInIf;
-%type<label> M;
-%type<block> N;
-%type<block> Statement;
-%type<block> Statements;
-%type<scope> IfScope;
-%type<scope> ElseScope;
+
 
 
 
