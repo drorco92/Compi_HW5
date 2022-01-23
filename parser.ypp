@@ -118,6 +118,10 @@
 %token FALSE
 %token RETURN
 
+%nonassoc IF
+%nonassoc ELSE
+
+
 %token WHILE
 %token BREAK
 %token CONTINUE
@@ -128,6 +132,20 @@
 %token ID
 %token NUM
 %token STRING
+
+%right ASSIGN
+%left OR
+%left AND
+%left RELOP_EQUAL RELOP_NOT_EQUAL
+
+%nonassoc RELOP_LT RELOP_GT RELOP_LTE RELOP_GTE
+
+%left BINOP_ADD BINOP_SUB
+%left BINOP_MULTIPLY BINOP_DIV
+%right NOT
+%nonassoc RPAREN
+%nonassoc LPAREN
+
 %type<exp> NUM
 %type<id> ID
 %type<exp> Exp
@@ -146,28 +164,6 @@
 %type<block> Statements;
 %type<scope> IfScope;
 %type<scope> ElseScope;
-
-%right ASSIGN
-%left OR
-%left AND
-%left RELOP_EQUAL
-%left RELOP_NOT_EQUAL
-
-%nonassoc RELOP_LT
-%nonassoc RELOP_GT
-%nonassoc RELOP_LTE
-%nonassoc RELOP_GTE
-
-%left BINOP_ADD
-%left BINOP_SUB
-%left BINOP_MULTIPLY
-%left BINOP_DIV
-%right NOT
-%nonassoc RPAREN
-%nonassoc LPAREN
-%nonassoc IF
-%nonassoc ELSE
-
 
 
 
