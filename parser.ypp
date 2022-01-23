@@ -481,7 +481,7 @@ ExpList        : Exp                                                          {
                                                                               }
                ExpList                                                        {
                                                                                   $$ = new ArgumentList();
-                                                                                  $$ = &$3;
+                                                                                  $$ = $3;
                                                                                   $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
                                                                               }
 
