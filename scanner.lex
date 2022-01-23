@@ -33,15 +33,15 @@ continue                      return CONTINUE;
 \{                            return LBRACE;
 \}                            return RBRACE;
 =                             return ASSIGN;
-==                            return RELOP_EQ;
-!=                            return RELOP_NOT_EQ;
+==                            return RELOP_EQUAL;
+!=                            return RELOP_NOT_EQUAL;
 \<                          return RELOP_LT;
 \>                          return RELOP_GT;
 \<=                         return RELOP_LTE;
 \>=                         return RELOP_GTE;
 \+                          return BINOP_ADD;
 \-                          return BINOP_SUB;
-\*                          return BINOP_MUL;
+\*                          return BINOP_MULTIPLY;
 \/                          return BINOP_DIV;
 [a-zA-Z][a-zA-Z0-9]*          {
                                 string name(yytext);
