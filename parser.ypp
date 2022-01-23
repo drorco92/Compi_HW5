@@ -145,7 +145,7 @@
 %left BINOP_MULTIPLY BINOP_DIV
 %right NOT
 %nonassoc RPAREN
-%nonassoc LPAREN
+%left LPAREN
 
 %type<exp> NUM
 %type<id> ID
