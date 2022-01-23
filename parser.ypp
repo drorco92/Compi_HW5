@@ -482,7 +482,7 @@ ExpList        : Exp                                                          {
                ExpList                                                        {
 
                                                                                   $$ = new ArgumentList();
-                                                                                  $$->exp = $3->exp;
+                                                                                  $$->exp = $4->exp;
                                                                                   $$-exp.push_back($1);
                                                                                   $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
 
