@@ -2,7 +2,6 @@
 	#include "hw3_output.hpp"
 	#include "Structs.hpp"
 	#include "SymbolTables.hpp"
-	#include "parser_funcs.hpp"
     #include <stdlib.h>
 	using namespace output;
 
