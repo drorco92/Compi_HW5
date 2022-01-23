@@ -16,6 +16,19 @@ Function::Function(string name, string return_type, ArgVector& args) : Symbol(na
 
 Function::~Function() {}
 
+
+string Function::ir_params() {
+    string res("(");
+    if (!this->args.empty()) {
+        res += "i32";
+        for(int i = 0; i < this->args.size()-1; i++) {
+            res += ", i32";
+        }
+    }
+    res += ")";
+    return res;
+}
+
 void Function::print() {output::printID(name, offset, output::makeFunctionType(this->return_type, this->args));}
 
 Symbol::Symbol(string name, int offset, string type) : name(name), offset(offset), type(type) {};
@@ -75,10 +88,10 @@ void TablesList::OpenScope() {
 }
 
 void TablesList::CloseScope() {
-    output::endScope();
-    for (Symbol* symbol : this->tables.back()->symbols) {
-        symbol->print();
-    }
+//    output::endScope();
+//    for (Symbol* symbol : this->tables.back()->symbols) {
+//        symbol->print();
+//    }
     delete this->tables.back();
     this->tables.pop_back();
     this->offsets.pop();

@@ -33,10 +33,20 @@ continue                      return CONTINUE;
 \{                            return LBRACE;
 \}                            return RBRACE;
 =                             return ASSIGN;
-!=|==                         return RELOP_EQUAL;
-\>|\>=|\<|\<=                 return RELOP;
-\+|\-                         return BINOP_ADD;
-\/|\*                         return BINOP_MULTIPLY;
+//!=|==                         return RELOP_EQUAL;
+==                            return RELOP_EQ;
+!=                            return RELOP_NOT_EQ;
+//\>|\>=|\<|\<=                 return RELOP;
+//\+|\-                         return BINOP_ADD;
+//\/|\*                         return BINOP_MULTIPLY;
+\<                          return RELOP_LT;
+\>                          return RELOP_GT;
+\<=                         return RELOP_LTE;
+\>=                         return RELOP_GTE;
+\+                          return BINOP_ADD;
+\-                          return BINOP_SUB;
+\*                          return BINOP_MUL;
+\/                          return BINOP_DIV;
 [a-zA-Z][a-zA-Z0-9]*          {
                                 string name(yytext);
                                 yylval.id = new Id(name);
@@ -47,7 +57,11 @@ continue                      return CONTINUE;
                                 yylval.val = atoi(yytext);
                                 return NUM;
                               }
-\"([^\n\r\"\\]|\\[rnt"\\])+\" return STRING;
+\"([^\n\r\"\\]|\\[rnt\"\\])+\" {
+                                string name(yytext);
+                                yylval.id = new Id(name.substr(1, name.size() - 2));
+                                return STRING;
+                                }
 [\t\r\n ]                     ;
 \/\/[^\r\n]*(\r|\n|\r\n)?     ;
 .                           {output::errorLex(yylineno); exit(1);}
