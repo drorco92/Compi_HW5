@@ -125,9 +125,6 @@
 
 %nonassoc RELOP_LT RELOP_GT RELOP_LTE RELOP_GTE
 
-%left BINOP_ADD BINOP_SUB
-%left BINOP_MUL BINOP_DIV
-
 %token WHILE
 %token BREAK
 %token CONTINUE
@@ -157,7 +154,9 @@
 %left RELOP_EQUAL
 %nonassoc RELOP
 %left BINOP_ADD
+%left BINOP_SUB
 %left BINOP_MULTIPLY
+%left BINOP_DIV
 %right NOT
 %nonassoc RPAREN
 %nonassoc LPAREN
