@@ -137,6 +137,7 @@
 %left OR
 %left AND
 %left RELOP_EQUAL RELOP_NOT_EQUAL
+%left ID
 
 %nonassoc RELOP_LT RELOP_GT RELOP_LTE RELOP_GTE
 
