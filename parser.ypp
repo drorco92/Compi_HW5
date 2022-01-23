@@ -481,7 +481,7 @@ ExpList        : Exp                                                          {
                                                                               }
                ExpList                                                        {
                                                                                   $$ = new ArgumentList();
-                                                                                  $$ = $3;
+                                                                                  $$ = &$3;
                                                                                   $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
                                                                               }
 
@@ -621,7 +621,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$ = ExecuteOperation($1, $3, ENUM_RELOP, "eq");
                                                                                   parser.ExpType = "BOOL";
                                                                               }
-               | Exp RELOP_NOT_EQ Exp                                          {
+               | Exp RELOP_NOT_EQUAL Exp                                          {
                                                                                   $$ = ExecuteOperation($1, $3, ENUM_RELOP, "ne");
                                                                                   parser.ExpType = "BOOL";
                                                                               }
