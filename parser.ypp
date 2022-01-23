@@ -117,13 +117,7 @@
 %token TRUE
 %token FALSE
 %token RETURN
-
-%nonassoc IF
-%nonassoc ELSE
-
-
-%nonassoc RELOP_LT RELOP_GT RELOP_LTE RELOP_GTE
-
+%token IF
 %token WHILE
 %token BREAK
 %token CONTINUE
@@ -152,7 +146,12 @@
 %left AND
 %left RELOP_EQUAL
 %left RELOP_NOT_EQUAL
-%nonassoc RELOP
+
+%nonassoc RELOP_LT
+%nonassoc RELOP_GT
+%nonassoc RELOP_LTE
+%nonassoc RELOP_GTE
+
 %left BINOP_ADD
 %left BINOP_SUB
 %left BINOP_MULTIPLY
@@ -160,7 +159,7 @@
 %right NOT
 %nonassoc RPAREN
 %nonassoc LPAREN
-
+%nonassoc ELSE
 
 %type<label> MarkInIf;
 %type<label> M;
