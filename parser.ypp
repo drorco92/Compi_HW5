@@ -160,7 +160,6 @@
 %right NOT
 %nonassoc RPAREN
 %nonassoc LPAREN
-%nonassoc ELSE
 
 
 %type<label> MarkInIF;
