@@ -1,0 +1,518 @@
+%{
+	#include "hw3_output.hpp"
+	#include "Structs.hpp"
+	#include "SymbolTables.hpp"
+	using namespace output;
+
+    typedef enum {
+        ENUM_NONE,
+        ENUM_ASSIGN,
+        ENUM_RELOP,
+        ENUM_AND,
+        ENUM_OR,
+        ENUM_NOT,
+        ENUM_BINOP,
+    } Operation;
+
+	int main();
+    extern int yylineno;
+    extern char* yytext;
+    extern int yylex();
+    void CheckLegalB(int n);
+    Exp* NewCastedExp(const Exp* exp, const string& type);
+    Function* GetFunction(string name, ArgVector& args);
+    void AssertFunctionUseLegal(ArgVector& expected, ArgVector& current, string name);
+    string GetAnnotation(string name);
+    Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation);
+    string GetType(string name);
+    void AssertAssignLegal(string type1, string type2);
+    bool NumberType(Exp* exp);
+    void AssertLegalEpsilonFuncsDerivation();
+    int yyerror(const char* message);
+
+	class Parser {
+	private:
+
+		int loopCount = 0;
+	public:
+		TablesList symbolTable;
+		Parser() {TablesList* p = new TablesList(); symbolTable = *p;};
+		string ScopeReturnType = "";
+		string ExpType;
+		void AssertReturn(const string& retType){
+			if (retType != ScopeReturnType && !(ScopeReturnType == "INT" && retType == "BYTE"))
+			{
+				output::errorMismatch(yylineno);
+				exit(0);
+			}
+		}
+
+		void EnterLoopScope(){
+			loopCount++;
+			symbolTable.OpenScope();
+
+		}
+
+		void ExitLoopScope(){
+			loopCount--;
+			symbolTable.CloseScope();
+		}
+
+		void AssertContinueLegal(){
+			if (loopCount <= 0){
+				output::errorUnexpectedContinue(yylineno);
+				exit(1);
+			}
+		}
+
+		void AssertBreakLegal(){
+			if (loopCount <= 0){
+				output::errorUnexpectedBreak(yylineno);
+				exit(1);
+			}
+		}
+
+	};
+	Parser parser;
+
+%}
+
+%token VOID
+%token INT
+%token BYTE
+%token B
+%token BOOL
+%token CONST
+%token TRUE
+%token FALSE
+%token RETURN
+%token IF
+%token WHILE
+%token BREAK
+%token CONTINUE
+%token SC
+%token COMMA
+%token LBRACE
+%token RBRACE
+%token ID
+%token NUM
+%token STRING
+%type<exp> NUM
+%type<id> ID
+%type<exp> Exp
+%type<exp> Type
+%type<exp> RetType
+%type<exp> Call
+%type<exp> TypeAnnotation
+%type<argument> FormalDecl
+%type<argument_list> FormalsList
+%type<argument_list> Formals
+%type<argument_list> ExpList
+
+
+%right ASSIGN
+%left OR
+%left AND
+%left RELOP_EQUAL
+%nonassoc RELOP
+%left BINOP_ADD
+%left BINOP_MULTIPLY
+%right NOT
+%nonassoc RPAREN
+%nonassoc LPAREN
+%nonassoc ELSE
+
+%%
+Program        : Funcs                                                        {
+
+																				  parser.symbolTable.CloseGlobal();
+                                                                              }
+
+
+Funcs          : FuncDecl Funcs                                               {
+																				  /* No Action */
+                                                                              }
+               |                                                              {
+                                                                                  AssertLegalEpsilonFuncsDerivation();
+                                                                              }
+
+
+FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
+																				  parser.symbolTable.AddSymbol($2->name, $1->type, $4->arguments);
+                                                                              }
+                 LBRACE                                                       {
+                                                                                  parser.symbolTable.OpenScope();
+                                                                                  parser.ScopeReturnType = $1->type;
+                                                                                  parser.symbolTable.AddArgsSymbols($4->arguments);
+                                                                              }
+                 Statements RBRACE                                                
+																			  {
+                                                                                  parser.ScopeReturnType = "";
+                                                                                  parser.symbolTable.CloseScope();
+                                                                              }
+
+RetType        : Type                                                         {
+                                                                                  $$ = new Exp($1->type);
+                                                                              }
+               | VOID                                                         {
+                                                                                  $$ = new Exp("VOID");
+                                                                              }														  
+
+
+Formals        : FormalsList                                                  {
+                                                                                  $$->arguments = $1->arguments;
+                                                                              }
+               |                                                              {
+                                                                                  $$ = new ArgumentList();
+                                                                              }
+
+
+FormalsList    : FormalDecl                                                   {
+                                                                                  $$ = new ArgumentList();
+                                                                                  $$->arguments.push_back(*$1);
+                                                                              }
+               | FormalDecl COMMA FormalsList                                 {
+                                                                                  $$ = new ArgumentList();
+                                                                                  $$->arguments = $3->arguments;
+                                                                                  $$->arguments.push_back(*$1);
+                                                                              }
+
+
+FormalDecl     : TypeAnnotation Type ID                                       {
+                                                                                  $$ = new Argument($1->type, $3->name, $2->type);
+                                                                              }
+
+
+Statements     : Statement                                                    {
+                                                                                  /* No Action */
+                                                                              }
+               | Statements Statement                                         {
+                                                                                  /* No Action */
+                                                                              }
+Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
+                                                                                  /* No Action */
+                                                                              }
+               | TypeAnnotation Type ID SC                                    {
+																				 if($1->type == "CONST") {
+																					output::errorConstDef(yylineno);
+																					exit(1);
+																				 }
+																				 parser.symbolTable.AddSymbol($1->type, $3->name, $2->type);
+                                                                              }
+               | TypeAnnotation Type ID ASSIGN Exp SC                         {
+																				 AssertAssignLegal($2->type, $5->type);
+                                                                                 parser.symbolTable.AddSymbol($1->type, $3->name, $2->type);
+                                                                              }
+               | ID ASSIGN Exp SC                                             {
+																				  if(GetAnnotation($1->name) == "CONST") {
+																					output::errorConstMismatch(yylineno);
+																					exit(1);
+																				  }
+																				  AssertAssignLegal(GetType($1->name), $3->type);
+                                                                              }
+               | Call SC                                                      {
+                                                                                  /* No Action */
+                                                                              }
+               | RETURN SC                                                    {
+                                                                                  parser.AssertReturn("VOID");
+                                                                              }
+               | RETURN Exp SC                                                {
+																				  if(parser.ScopeReturnType == "VOID") {
+																					output::errorMismatch(yylineno);
+																					exit(1);
+																				  }
+																				  parser.AssertReturn($2->type);
+                                                                              }
+               | IF LPAREN Exp CheckBool RPAREN ScopeStart Statement ScopeEnd
+                                                                              {
+                                                                                 /* No Action */
+                                                                              }
+               | IF LPAREN Exp CheckBool RPAREN ScopeStart Statement ScopeEnd ELSE ScopeStart Statement ScopeEnd
+                                                                              {
+                                                                                 /* No Action */
+                                                                              }
+               | WHILE LPAREN Exp CheckBool RPAREN                             
+																			  {
+                                                                                  parser.EnterLoopScope();
+                                                                              }
+				Statement 
+																			  {
+																				  parser.ExitLoopScope();
+																			  }
+               | BREAK SC                                                     {
+                                                                                  parser.AssertBreakLegal();
+                                                                              }
+               | CONTINUE SC                                                  {
+                                                                                  parser.AssertContinueLegal();
+                                                                              }
+
+
+Call           : ID LPAREN ExpList RPAREN                                     {
+                                                                                  $$ = new Exp(GetFunction($1->name, $3->arguments)->return_type);
+                                                                              }
+               | ID LPAREN RPAREN                                             {
+																				  ArgumentList *arg_list = new ArgumentList();
+                                                                                  $$ = new Exp(GetFunction($1->name, arg_list->arguments)->return_type);
+                                                                              }
+
+
+ExpList        : Exp                                                          {
+                                                                                  $$ = new ArgumentList();
+                                                                                  $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
+                                                                              }
+               | Exp COMMA ExpList                                            {
+                                                                                  $$ = new ArgumentList();
+                                                                                  $$ = $3;
+                                                                                  $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
+                                                                              }
+
+Type           : INT                                                          {
+																			   $$ = new Exp("INT");
+                                                                              }
+               | BYTE                                                         {
+                                                                               $$ = new Exp("BYTE");
+                                                                              }
+               | BOOL                                                         {
+                                                                               $$ = new Exp("BOOL");
+                                                                              }
+
+
+TypeAnnotation : CONST                                                        {
+																				  $$ = new Exp("CONST");
+                                                                              }
+               |                                                              {
+                                                                                  $$ = new Exp("");
+                                                                              }
+
+
+Exp            : LPAREN Exp RPAREN                                            {
+                                                                                  $$ = new Exp($2->type);
+                                                                                  parser.ExpType = "INT";
+                                                                              }
+               | Exp BINOP_ADD Exp                                            {
+                                                                                  $$ = ExecuteOperation($1, $3, ENUM_BINOP);
+                                                                                  parser.ExpType = "INT";
+                                                                              }
+               | Exp BINOP_MULTIPLY Exp                                       {
+                                                                                  $$ = ExecuteOperation($1, $3, ENUM_BINOP);
+                                                                                  parser.ExpType = "INT";
+                                                                              }
+               | ID                                                           {
+																				  $$ = new Exp(GetType($1->name));
+                                                                                  $$->name = $1->name;
+                                                                                  parser.ExpType = GetType($1->name);
+                                                                              }
+               | Call                                                         {
+                                                                                  $$ = new Exp($1->type);
+                                                                                  parser.ExpType = $1->type;
+                                                                              }
+               | NUM                                                          {
+																				  $$ = new Exp("INT");
+                                                                                  parser.ExpType = "INT";
+                                                                              }
+               | NUM B                                                        {
+                                                                                CheckLegalB(yylval.val);
+                                                                                  $$ = new Exp("BYTE");
+                                                                                  parser.ExpType = "BYTE";
+                                                                              }
+               | STRING                                                       {
+                                                                                  $$ = new Exp("STRING");
+                                                                                  parser.ExpType = "STRING";
+                                                                              }
+               | TRUE                                                         {
+                                                                                  $$ = new Exp("BOOL");
+                                                                                  parser.ExpType = "BOOL";
+                                                                              }
+               | FALSE                                                        {
+                                                                                  $$ = new Exp("BOOL");
+                                                                                  parser.ExpType = "BOOL";
+                                                                              }
+               | NOT Exp                                                      {
+                                                                                  $$ = ExecuteOperation($2, $2, ENUM_NOT);
+                                                                                  parser.ExpType = "BOOL";
+                                                                              }
+               | Exp AND Exp                                                  {
+                                                                                  $$ = ExecuteOperation($1, $3, ENUM_AND);
+                                                                                  parser.ExpType = "BOOL";
+                                                                              }
+               | Exp OR Exp                                                   {
+                                                                                  $$ = ExecuteOperation($1, $3, ENUM_OR);
+                                                                                  parser.ExpType = "BOOL";
+                                                                              }
+               | Exp RELOP_EQUAL Exp                                          {
+                                                                                  $$ = ExecuteOperation($1, $3, ENUM_RELOP);
+                                                                                  parser.ExpType = "BOOL";
+                                                                              }
+               | Exp RELOP Exp                                                {
+                                                                                  $$ = ExecuteOperation($1, $3, ENUM_RELOP);
+                                                                                  parser.ExpType = "BOOL";
+                                                                              }
+               | LPAREN Type RPAREN Exp                                       {
+                                                                                  $$ = NewCastedExp($4, $2->type);
+                                                                              }
+ScopeStart      :                                                             {
+                                                                                  parser.symbolTable.OpenScope();
+                                                                              }
+
+
+ScopeEnd        :                                                             {
+                                                                                  parser.symbolTable.CloseScope();
+                                                                              }
+																			  
+CheckBool		:															  {
+                                                                                  if (parser.ExpType !="BOOL")
+                                                                                  {
+                                                                                      errorMismatch(yylineno);
+                                                                                      exit(1);
+                                                                                  }
+																			  }
+
+
+%%
+
+int main()
+{
+	return yyparse();
+}
+
+int yyerror(const char* message)
+{
+	errorSyn(yylineno);
+	exit(1);
+}
+
+inline void CheckLegalB(int n)
+{
+    if (n > 255)
+    {
+        errorByteTooLarge(yylineno, to_string(yylval.val));
+        exit(1);
+    }
+}
+
+void AssertAssignLegal(string type1, string type2) {
+    if((type1 != type2 && (type1 != "INT" || type2 != "BYTE")) || type1 == "VOID") {
+        errorMismatch(yylineno);
+        exit(1);
+    }
+}
+
+void AssertLegalEpsilonFuncsDerivation(){
+    if(string(yytext) != "") {
+        yyerror(nullptr);
+    }
+}
+
+void AssertFunctionUseLegal(ArgVector& expected, ArgVector& current, string name) {
+    if (expected.size() != current.size())
+    {
+        errorPrototypeMismatch(yylineno, name, expected);
+        exit(1);
+    }
+    int size = expected.size();
+    for(int i=0; i < size; i++){
+        if(expected[i].type != current[size-i-1].type && !(expected[i].type == "INT" && current[size-i-1].type == "BYTE")){
+            errorPrototypeMismatch(yylineno, name, expected);
+            exit(1);
+        }
+    }
+}
+
+inline bool NumberType(Exp* exp) {
+    if (exp->type != "BYTE" && exp->type != "INT"){
+        return false;
+    }
+    return true;
+}
+
+string GetType(string name) {
+    Symbol* symbol = nullptr;
+    symbol =  parser.symbolTable.GetSymbol(name, false);
+    if(symbol == nullptr) {
+        errorUndef(yylineno, name);
+        exit(1);
+    }
+    return symbol->type;
+}
+
+string GetAnnotation(string name) {
+    Variable* symbol;
+    symbol = (Variable*)parser.symbolTable.GetSymbol(name, false);
+    if (symbol == nullptr){
+        errorUndef(yylineno, name);
+        exit(1);
+    }
+    return symbol->type_annotation;
+}
+
+Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation) {
+    if(exp1->type == "STRING" || exp2->type == "STRING") {
+        errorMismatch(yylineno);
+        exit(1);
+    }
+
+    switch(operation)
+    {
+         case(ENUM_NOT):
+         {
+              if (exp1->type == "BOOL")
+              return new Exp("BOOL");
+              break;
+         }
+
+         case(ENUM_RELOP):
+         {
+             if (NumberType(exp1) && NumberType(exp2))
+                 return new Exp("BOOL");
+             break;
+         }
+
+        case(ENUM_ASSIGN):
+        {
+            AssertAssignLegal(exp1->type, exp2->type);
+            return exp1;
+        }
+
+        case(ENUM_AND):
+        case(ENUM_OR):
+        {
+           if (exp1->type == "BOOL" && exp2->type == "BOOL")
+               return new Exp("BOOL");
+           break;
+        }
+
+        case(ENUM_BINOP):
+        {
+            if (NumberType(exp1) && NumberType(exp2)){
+                if(exp1->type == "INT" || exp2->type == "INT")
+                    return new Exp("INT");
+                else
+                    return new Exp("BYTE");
+            }
+            break;
+        }
+    }
+    errorMismatch(yylineno);
+    exit(1);
+}
+
+Function* GetFunction(string name, ArgVector& args){
+    Function* function;
+    function = (Function*)(parser.symbolTable.GetSymbol(name, true));
+    if (function == nullptr) {
+        errorUndefFunc(yylineno, name);
+        exit(1);
+    }
+
+    AssertFunctionUseLegal(function->args, args, function->name);
+    return function;
+}
+
+Exp* NewCastedExp(const Exp* exp, const string& type) {
+    string eType = exp->type;
+    if((type == "BYTE" || type == "INT") && (eType == "BYTE" || eType == "INT")){
+        return new Exp(type);
+    }
+    errorMismatch(yylineno);
+    exit(1);
+}
