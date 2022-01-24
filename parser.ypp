@@ -34,7 +34,7 @@
     int yyerror(const char* message);
     void ValidateType(const string& x, const string& y);
     void exp_to_bool(Exp *bool_exp, CodeBuffer& buffer);
-    void call_to_ir(Exp* call, Id* id, ExpList* expList, Function* f, bool is_with_args, CodeBuffer& buffer);
+    void call_to_ir(Exp* call, Id* id, ArgumentList* expList, Function* f, bool is_with_args, CodeBuffer& buffer);
     void declarePrerequisites(CodeBuffer& buffer);
 
 	class Parser {
@@ -84,8 +84,8 @@
 	class Generator {
 
     public:
-        static size_t var_num = 0;
-        static size_t str_num = 0;
+        static size_t var_num;
+        static size_t str_num;
 
         static string new_tmp() {
             string var = "%t" + to_string(var_num);
@@ -98,6 +98,8 @@
             return str;
         }
     };
+    size_t Generator::var_num = 0;
+    size_t Generator::str_num = 0;
 
 	extern Parser parser;
     string frame_pointer;
@@ -191,8 +193,8 @@ FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
                                                                                   parser.ScopeReturnType = $1->type;
                                                                                   parser.symbolTable.AddArgsSymbols($4->arguments);
 
-                                                                                  string ir_ret_type = curr_func_ret_type == "VOID" ? "void" : "i32";
-                                                                                  Function* func_sym = dynamic_cast<Function*>(symbolTable.GetSymbol($2->name, true));
+                                                                                  string ir_ret_type = parser.ScopeReturnType == "VOID" ? "void" : "i32";
+                                                                                  Function* func_sym = dynamic_cast<Function*>(parser.symbolTable.GetSymbol($2->name, true));
 
                                                                                   buffer.emit("define " + ir_ret_type + " @" + $2->name + func_sym->ir_params() + " {");
                                                                                   frame_pointer = Generator::new_tmp();
@@ -211,7 +213,7 @@ FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
                                                                                   parser.ScopeReturnType = "";
                                                                                   parser.symbolTable.CloseScope();
                                                                                   if(1) {
-                                                                                      if(curr_func_ret_type == "VOID") {
+                                                                                      if(parser.ScopeReturnType == "VOID") {
                                                                                           buffer.emit("ret void");
                                                                                       }
                                                                                       else {
@@ -221,7 +223,7 @@ FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
                                                                                       }
                                                                                   }
                                                                                   buffer.emit("}");
-                                                                                  curr_func_ret_type = "";
+                                                                                  parser.ScopeReturnType = "";
                                                                               }
 
 RetType        : Type                                                         {
@@ -320,7 +322,8 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 																					output::errorConstMismatch(yylineno);
 																					exit(1);
 																				  }
-																				  AssertAssignLegal(GetType($1->name), $3->type);
+																				  string type = GetType($1->name);
+																				  AssertAssignLegal(type, $3->type);
 																				  if (type == "BOOL") {
                                                                                     exp_to_bool($3, buffer);
                                                                                   }
@@ -335,8 +338,8 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                   $$ = new Block();
                                                                                   if ($1->type == "BOOL") {
                                                                                       string nextLabel = buffer.genLabel();
-                                                                                      buffer.bpatch($1->trueList, nextLabel);
-                                                                                      buffer.bpatch($1->falseList, nextLabel);
+                                                                                      buffer.bpatch($1->true_list, nextLabel);
+                                                                                      buffer.bpatch($1->false_list, nextLabel);
                                                                                   }
                                                                               }
                | RETURN SC                                                    {
@@ -353,8 +356,8 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 																					exit(1);
 																				  }
 																				  parser.AssertReturn($2->type);
-																				  AssertAssignLegal(curr_func_ret_type, $2->type);//TODO do we need this?
-																				  if (curr_func_ret_type == "BOOL") {
+																				  AssertAssignLegal(parser.ScopeReturnType, $2->type);//TODO do we need this?
+																				  if (parser.ScopeReturnType == "BOOL") {
                                                                                       exp_to_bool($2, buffer);
                                                                                   }
 
@@ -363,11 +366,11 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                               }
                | IfScope %prec IF
                                                                               {
-                                                                                  buffer.bpatch($1->exp->trueList, $1->label);
+                                                                                  buffer.bpatch($1->exp->true_list, $1->label);
                                                                                   $$ = new Block();
                                                                                   $$->breakList = $1->block->breakList;
                                                                                   $$->continueList = $1->block->continueList;
-                                                                                  $$->nextList = CodeBuffer::merge($1->exp->falseList, $1->block->nextList);
+                                                                                  $$->nextList = CodeBuffer::merge($1->exp->false_list, $1->block->nextList);
                                                                                   int address = buffer.emit("br label @");
                                                                                   $$->nextList = CodeBuffer::merge($$->nextList, CodeBuffer::makelist({address, FIRST}));
                                                                                   string label = buffer.genLabel();
