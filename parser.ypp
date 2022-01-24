@@ -540,7 +540,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = GetType($1->name);
 
                                                                                   {
-                                                                                      auto sym = parser.symbolTable.search_symbol($1->name, false);
+                                                                                      auto sym = parser.symbolTable.GetSymbol($1->name, false);
                                                                                       string type = GetType($1->name);
                                                                                       $$ = new Exp(type);
                                                                                       $$->name = $1->name;
@@ -615,12 +615,12 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                               }
                | Exp AND M Exp                                                {
                                                                                   buffer.bpatch($1->true_list, $3->label);
-                                                                                  $$ = ExecuteOperation($1, $3, ENUM_AND, "", buffer);
+                                                                                  $$ = ExecuteOperation($1, $4, ENUM_AND, "", buffer);
                                                                                   parser.ExpType = "BOOL";
                                                                               }
                | Exp OR M Exp                                                 {
                                                                                   buffer.bpatch($1->false_list, $3->label);
-                                                                                  $$ = ExecuteOperation($1, $3, ENUM_OR, "", buffer);
+                                                                                  $$ = ExecuteOperation($1, $4, ENUM_OR, "", buffer);
                                                                                   parser.ExpType = "BOOL";
                                                                               }
                | Exp RELOP_EQUAL Exp                                          {
