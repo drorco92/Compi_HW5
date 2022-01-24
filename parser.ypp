@@ -945,10 +945,10 @@ void declarePrerequisites(CodeBuffer& buffer) {
     buffer.emit("}");
 }
 
-void div_handler(Exp* var1, Exp* var2, string& m_reg, CodeBuffer &buffer){
+void div_handler(Exp* exp1, Exp* exp2, string& m_reg, CodeBuffer &buffer){
     // first check for a zero div error
     string cond = Generator::new_tmp();
-    buffer.emit(cond + " = icmp eq i32 0, " + var2->m_reg);
+    buffer.emit(cond + " = icmp eq i32 0, " + exp2->m_reg);
     int address = buffer.emit("br i1 " + cond + ", label @, label @");
     string zeroDivLabel = buffer.genLabel();
     buffer.emit("call i32 (i8*, ...) @printf(i8* getelementptr ([24 x i8], [24 x i8]* @zero_div_error, i32 0, i32 0))");
