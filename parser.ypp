@@ -260,8 +260,10 @@ FormalsList    : FormalDecl                                                   {
 FormalDecl     : TypeAnnotation Type ID                                       {
                                                                                   $$ = new Argument($1->type, $3->name, $2->type);
                                                                               }
-IfScope        : IF LPAREN Exp RPAREN MarkInIf ScopeStart Statement ScopeEnd {
-                                                                                  $$ = new Scope($3, $5->label, $7->nextList, $7->breakList, $7->continueList);
+
+IfScope        : IF LPAREN Exp CheckBool RPAREN MarkInIf ScopeStart Statement ScopeEnd
+                                                                              {
+                                                                                  $$ = new Scope($3, $6->label, $8->nextList, $8->breakList, $8->continueList);
                                                                               }
 
 ElseScope      :   ELSE N M ScopeStart Statement ScopeEnd                    {
@@ -395,15 +397,6 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                 $$->nextList = CodeBuffer::merge($$->nextList, CodeBuffer::makelist({address, FIRST}));
                                                                                 string label = buffer.genLabel();
                                                                                 buffer.bpatch($$->nextList, label);
-                                                                              }
-
-               | IF LPAREN Exp CheckBool RPAREN ScopeStart Statement ScopeEnd
-                                                                              {
-                                                                                 /* No Action */
-                                                                              }
-               | IF LPAREN Exp CheckBool RPAREN ScopeStart Statement ScopeEnd ELSE ScopeStart Statement ScopeEnd
-                                                                              {
-                                                                                 /* No Action */
                                                                               }
                | WHILE LPAREN N M Exp CheckBool RPAREN
                                                                               {
