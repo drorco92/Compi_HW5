@@ -103,7 +103,7 @@
     size_t Generator::var_num = 0;
     size_t Generator::str_num = 0;
 
-	extern Parser parser;
+	Parser parser;
 	string curr_exp_type("");
 	int during_while = 0;
     string frame_pointer;
