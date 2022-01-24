@@ -576,6 +576,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   buffer.emitGlobal($$->reg + " = global [" + $$->size + " x i8] c\"" + yylval.id->name + "\\00\"");
                                                                               }
                | TRUE                                                         {
+                                                                                  std::cout << "GOZER TRUE" << std::endl;
                                                                                   $$ = new Exp("BOOL");
                                                                                   parser.ExpType = "BOOL";
 
