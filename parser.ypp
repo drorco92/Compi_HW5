@@ -541,9 +541,9 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$->name = $1->name;
                                                                                   parser.ExpType = GetType($1->name);
 
-                                                                                  if((Variable*)sym->to_print == true){
+                                                                                  if(((Variable*)sym)->to_print == true){
                                                                                      $$->print_val = true;
-                                                                                     $$->val = (Variable*)sym->val;
+                                                                                     $$->val = ((Variable*)sym)->val;
                                                                                   }
                                                                                   else{
                                                                                       string ptr = Generator::new_tmp();
