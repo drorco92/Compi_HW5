@@ -747,7 +747,7 @@ string GetAnnotation(string name) {
     return symbol->type_annotation;
 }
 
-Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& command, CodeBuffer* buffer) {
+Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& command, CodeBuffer& buffer) {
     if(exp1->type == "STRING" || exp2->type == "STRING") {
         errorMismatch(yylineno);
         exit(1);
@@ -759,7 +759,7 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
          {
               if (exp1->type == "BOOL") {
                   Exp* exp = new Exp("BOOL");
-                  exp->false_list = exp1->trueList;
+                  exp->false_list = exp1->true_list;
                   exp->true_list = exp1->false_list;
                   return exp;
               }
