@@ -634,9 +634,9 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   }
                                                                                   else {
                                                                                       buffer.emit(reg + " = add i8 "+$4->reg + ", 0");
-                                                                                      if($$->type == "BOOL") {
-                                                                                          buffer.emit(reg + " = and i8 " + reg + ", 255");
-                                                                                      }
+                                                                                      //if($$->type == "BOOL") {
+                                                                                      //    buffer.emit(reg + " = and i32 " + reg + ", 255");
+                                                                                      //}
                                                                                   }
 
 
