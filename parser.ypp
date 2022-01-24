@@ -222,7 +222,7 @@ FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
                                                                                           buffer.emit("ret void");
                                                                                       }
                                                                                       else {
-                                                                                        std::cout << "TTTTHHHEREs" << std::endl;
+                                                                                        std::cout << parser.ScopeReturnType << std::endl;
                                                                                           string ret_val = Generator::new_tmp();
                                                                                           buffer.emit(ret_val + " = add i32 0, 0");
                                                                                           buffer.emit("ret i32 " + ret_val);
