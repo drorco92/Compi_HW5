@@ -73,7 +73,7 @@ public:
     void OpenGlobal();
     void CloseScope();
     void CloseGlobal();
-    void AddSymbol(const std::string& annotation, const std::string& name, const std::string& type);                                     //variable symbol
+    void AddSymbol(const std::string& annotation, const std::string& name, const std::string& type, const std::string& value = "");                                     //variable symbol
     void AddSymbol(const std::string& name, const std::string& return_type, ArgVector& args);       //function symbol
     void AddArgsSymbols(ArgVector& args);
     void IsNameExists(const std::string& name, bool is_func);

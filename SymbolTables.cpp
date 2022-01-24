@@ -116,9 +116,9 @@ void TablesList::CloseGlobal() {
 
 
 
-void TablesList::AddSymbol(const string& annotation, const string& name, const string& type) {
+void TablesList::AddSymbol(const string& annotation, const string& name, const string& type, const string& value) {
     IsNameExists(name, false);
-    Variable* variable_symbol = new Variable(name, this->offsets.top(), type, annotation );
+    Variable* variable_symbol = new Variable(name, this->offsets.top(), type, annotation, value);
     this->tables.back()->symbols.push_back(variable_symbol);
     this->offsets.top() += 1;
 }
