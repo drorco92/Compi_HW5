@@ -52,7 +52,6 @@ struct Id {
 
 
 struct ArgumentList {
-    vector<Exp*> exp;
     ArgVector arguments;
     ArgumentList() = default;
 
@@ -70,23 +69,23 @@ struct ArgumentList {
 //    TypeList() = default;
 //};
 
-//struct ExpList {
-//    vector<Exp*> m_exp;
-//    vector<string> m_typeList;
-//
-//    ExpList() {
-//        this->m_exp = vector<Exp*>();
-//        this->m_typeList = vector<string>();
-//    }
-//
-//    friend ostream& operator<<(ostream& os, const ExpList& sl) {
-//        for (auto & it : sl.m_typeList) {
-//            os << it << ", ";
-//        }
-//        os << endl;
-//        return os;
-//    }
-//};
+struct ExpList {
+    vector<Exp*> exp;
+    vector<string> typeList;
+
+    ExpList() {
+        this->m_exp = vector<Exp*>();
+        this->m_typeList = vector<string>();
+    }
+
+    friend ostream& operator<<(ostream& os, const ExpList& sl) {
+        for (auto & it : sl.m_typeList) {
+            os << it << ", ";
+        }
+        os << endl;
+        return os;
+    }
+};
 
 
 
@@ -127,43 +126,6 @@ struct Scope {
     }
 };
 
-struct Case
-{
-    Block* statements;
-    string label;
-    int jump_to;
-    int val;
-    Case(int arg_val, string arg_label, const vector<pair<int,BranchLabelIndex>>& next_list, const vector<pair<int,BranchLabelIndex>>& break_list, const vector<pair<int,BranchLabelIndex>>& continue_list) {
-
-        this->statements = new Block();
-        this->statements->nextList = vector<pair<int,BranchLabelIndex>>(next_list);
-        this->statements->breakList = vector<pair<int,BranchLabelIndex>>(break_list);
-        this->statements->continueList = vector<pair<int,BranchLabelIndex>>(continue_list);
-        this->label =arg_label;
-        this->val = arg_val;
-    }
-
-};
-
-struct CaseStack
-{
-    std::stack<Case*> case_stack;
-    Case* default_case;
-    Case* last_case;
-
-    vector<pair<int,BranchLabelIndex>> nextList;
-    CaseStack() {
-        this->default_case = nullptr;
-    }
-    CaseStack(std::stack<Case*> arg_case_stack) {
-        this->case_stack = std::stack<Case*>(arg_case_stack);
-        this->default_case = nullptr;
-
-    }
-
-
-};
-
 
 
 
@@ -172,15 +134,13 @@ typedef union Node
 {
     ArgumentList* argument_list;
 	Argument* argument;
-//    ExpList* explist;
+    ExpList* expList;
 	Exp* exp;
     Id* id;
     int val;
     Label* label;
     Block* block;
     Scope* scope;
-    CaseStack* case_stack;
-    Case* case_struct;
 } STYPE;
 
 

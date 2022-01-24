@@ -146,17 +146,16 @@
 %nonassoc RPAREN
 %nonassoc LPAREN
 
-%type<exp> NUM
-%type<id> ID
 %type<exp> Exp
 %type<exp> Type
 %type<exp> RetType
-%type<exp> Call
-%type<exp> TypeAnnotation
-%type<argument> FormalDecl
 %type<argument_list> FormalsList
 %type<argument_list> Formals
-%type<argument_list> ExpList
+%type<argument> FormalDecl
+%type<expList> ExpList
+%type<exp> Call
+%type<id> ID
+%type<exp> TypeAnnotation
 %type<label> MarkInIf;
 %type<label> M;
 %type<block> N;
@@ -447,7 +446,7 @@ MarkInIf       : /* No Action */
                                                                               }
 
 Call           : ID LPAREN ExpList RPAREN                                     {
-                                                                                  $$ = new Exp(GetFunction($1->name, $3->arguments)->return_type);
+                                                                                  $$ = new Exp(GetFunction($1->name, $3->typeList)->return_type);
                                                                                   if ($1->name == "print") {
                                                                                       auto strExp = $3->exp.at(0);
                                                                                       buffer.emit("call void @print(i8* getelementptr ([" + strExp->size + " x i8], [" + strExp->size + " x i8]* " + strExp->reg + ", i32 0, i32 0))");
