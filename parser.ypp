@@ -684,7 +684,7 @@ void AssertLegalEpsilonFuncsDerivation(){
 }
 
 void AssertFunctionUseLegal(ArgVector& expected, ArgVector& current, string name) {
-    std::cout << "EXPECTED SIZE IS : << expexted.size() << "CURRENT SIZE IS : << current.size() <<std::endl;
+    std::cout << "EXPECTED SIZE IS :" << expexted.size() << "CURRENT SIZE IS :" << current.size() <<std::endl;
     if (expected.size() != current.size())
     {
         errorPrototypeMismatch(yylineno, name, expected);
