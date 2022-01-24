@@ -217,12 +217,10 @@ FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
                                                                                   parser.ScopeReturnType = "";
                                                                                   parser.symbolTable.CloseScope();
                                                                                   if(1) {
-                                                                                      if(parser.ScopeReturnType == "VOID") {
-                                                                                          std::cout << "HEREEEE" << std::endl;
+                                                                                      if(parser.ScopeReturnType == "VOID" || parser.ScopeReturnType == "") {
                                                                                           buffer.emit("ret void");
                                                                                       }
                                                                                       else {
-                                                                                        std::cout << "MOSHE" << parser.ScopeReturnType << std::endl;
                                                                                           string ret_val = Generator::new_tmp();
                                                                                           buffer.emit(ret_val + " = add i32 0, 0");
                                                                                           buffer.emit("ret i32 " + ret_val);
