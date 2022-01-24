@@ -496,7 +496,7 @@ TypeAnnotation : CONST                                                        {
 
 Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$ = new Exp($2->type);
-                                                                                  parser.ExpType = "INT";
+                                                                                  parser.ExpType = $2->type;
 
                                                                                   $$->reg = $2->reg;
                                                                                   $$->true_list = $2->true_list;
