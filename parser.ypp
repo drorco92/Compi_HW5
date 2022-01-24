@@ -32,7 +32,6 @@
     bool NumberType(Exp* exp);
     void AssertLegalEpsilonFuncsDerivation();
     int yyerror(const char* message);
-    void ValidateType(const string& x, const string& y);
     void exp_to_bool(Exp *bool_exp, CodeBuffer& buffer);
     void call_to_ir(Exp* call, Id* id, ArgumentList* expList, Function* f, bool is_with_args, CodeBuffer& buffer);
     void declarePrerequisites(CodeBuffer& buffer);
@@ -433,9 +432,9 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                   $$->continueList = CodeBuffer::makelist({address, FIRST});
                                                                               }
 
-MarkInIf       : /* No Action */
+MarkInIf       : CheckBool
                                                                               {
-                                                                                  ValidateType(curr_exp_type, "BOOL");
+
                                                                                   $$ = new Label(buffer.genLabel());
                                                                               }
 
@@ -842,15 +841,6 @@ Exp* NewCastedExp(const Exp* exp, const string& type) {
     std::cout << "NewCastedexp" << std::endl;
     errorMismatch(yylineno);
     exit(1);
-}
-
-void ValidateType(const string& x, const string& y) {
-    if (x != y)
-        {
-            std::cout << "ValidateType" << std::endl;
-            output::errorMismatch(yylineno);
-            exit(0);
-        }
 }
 
 void exp_to_bool(Exp *exp, CodeBuffer& buffer) {
