@@ -945,10 +945,10 @@ void declarePrerequisites(CodeBuffer& buffer) {
     buffer.emit("}");
 }
 
-void div_handler(Exp* exp1, Exp* exp2, string& m_reg, CodeBuffer &buffer){
+void div_handler(Exp* exp1, Exp* exp2, string& reg, CodeBuffer &buffer){
     // first check for a zero div error
     string cond = Generator::new_tmp();
-    buffer.emit(cond + " = icmp eq i32 0, " + exp2->m_reg);
+    buffer.emit(cond + " = icmp eq i32 0, " + exp2->reg);
     int address = buffer.emit("br i1 " + cond + ", label @, label @");
     string zeroDivLabel = buffer.genLabel();
     buffer.emit("call i32 (i8*, ...) @printf(i8* getelementptr ([24 x i8], [24 x i8]* @zero_div_error, i32 0, i32 0))");
@@ -956,10 +956,10 @@ void div_handler(Exp* exp1, Exp* exp2, string& m_reg, CodeBuffer &buffer){
     int exitAddress = buffer.emit("br label @");
     string okLabel = buffer.genLabel();
 
-    if (exp1->m_type == "BYTE" && exp2->m_type == "BYTE")
-        emit_op(m_reg, exp1->m_reg, exp2->m_reg, "udiv", buffer);
+    if (exp1->type == "BYTE" && exp2->type == "BYTE")
+        emit_op(reg, exp1->reg, exp2->reg, "udiv", buffer);
     else
-        emit_op(m_reg, exp1->m_reg, exp2->m_reg, "sdiv", buffer);
+        emit_op(reg, exp1->reg, exp2->reg, "sdiv", buffer);
 
     // bpatch error handling
     buffer.bpatch(CodeBuffer::makelist({address, FIRST}), zeroDivLabel);
