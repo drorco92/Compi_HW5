@@ -102,6 +102,7 @@
     size_t Generator::str_num = 0;
 
 	extern Parser parser;
+	int during_while = 0;
     string frame_pointer;
     int args_amount;
     bool return_happened = false;
@@ -378,8 +379,8 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                               }
                | IfScope ElseScope
                                                                               {
-                                                                                buffer.bpatch($1->exp->falseList, $2->label);
-                                                                                buffer.bpatch($1->exp->trueList, $1->label);
+                                                                                buffer.bpatch($1->exp->false_list, $2->label);
+                                                                                buffer.bpatch($1->exp->true_list, $1->label);
 
                                                                                 $$ = new Block();
                                                                                 $$->breakList = CodeBuffer::merge($1->block->breakList, $2->block->breakList);
@@ -395,27 +396,27 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 
                | WHILE LPAREN N M Exp RPAREN
                                                                               {
-                                                                                vaildate_type($5->type, "BOOL");
-                                                                                    during_while++;
-                                                                                    symbolTable.open_scope();
+                                                                                  ValidateType($5->type, "BOOL");
+                                                                                  during_while++;
+                                                                                  parser.symbolTable.open_scope();
                                                                                 }
                  M Statement
                                                                               {
                                                                                   parser.ExitLoopScope();
 
-                                                                                  symbolTable.close_scope();//TODO dont this we need this
+                                                                                  parser.symbolTable.close_scope();//TODO dont this we need this
                                                                                   during_while--;
                                                                                   $$ = new Block();
                                                                                   buffer.bpatch($9->continueList, $4->label);
-                                                                                  buffer.bpatch($5->trueList, $8->label);
+                                                                                  buffer.bpatch($5->true_list, $8->label);
                                                                                   buffer.bpatch($9->nextList, $4->label);
                                                                                   buffer.bpatch($3->nextList, $4->label);
-                                                                                  $$->nextList = CodeBuffer::merge($5->falseList, $9->breakList);
+                                                                                  $$->nextList = CodeBuffer::merge($5->false_list, $9->breakList);
                                                                                   buffer.emit("br label %" + $4->label);
                                                                                   string label = buffer.genLabel();
                                                                                   // buffer.bpatch($$->nextList, label);
                                                                                   buffer.bpatch($9->breakList, label);
-                                                                                  buffer.bpatch($5->falseList, label);
+                                                                                  buffer.bpatch($5->false_list, label);
                                                                               }
                | IF LPAREN Exp CheckBool RPAREN ScopeStart Statement ScopeEnd
                                                                               {
@@ -445,12 +446,13 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 
 MarkInIf       : /* No Action */
                                                                               {
-                                                                                  vaildate_type(curr_exp_type, "BOOL");
+                                                                                  ValidateType(curr_exp_type, "BOOL");
                                                                                   $$ = new Label(buffer.genLabel());
                                                                               }
 
 Call           : ID LPAREN ExpList RPAREN                                     {
-                                                                                  $$ = new Exp(GetFunction($1->name, $3->arguments)->return_type);
+                                                                                  Function* f = GetFunction($1->name, $3->arguments);
+                                                                                  $$ = new Exp(f->return_type);
                                                                                   if ($1->name == "print") {
                                                                                       auto strExp = $3->exp.at(0);
                                                                                       buffer.emit("call void @print(i8* getelementptr ([" + strExp->size + " x i8], [" + strExp->size + " x i8]* " + strExp->reg + ", i32 0, i32 0))");
