@@ -102,6 +102,7 @@
     size_t Generator::str_num = 0;
 
 	extern Parser parser;
+	string curr_exp_type("");
 	int during_while = 0;
     string frame_pointer;
     int args_amount;
@@ -398,13 +399,13 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                               {
                                                                                   ValidateType($5->type, "BOOL");
                                                                                   during_while++;
-                                                                                  parser.symbolTable.open_scope();
+                                                                                  parser.symbolTable.OpenScope();
                                                                                 }
                  M Statement
                                                                               {
                                                                                   parser.ExitLoopScope();
 
-                                                                                  parser.symbolTable.close_scope();//TODO dont this we need this
+                                                                                  parser.symbolTable.CloseScope();//TODO dont this we need this
                                                                                   during_while--;
                                                                                   $$ = new Block();
                                                                                   buffer.bpatch($9->continueList, $4->label);
@@ -462,7 +463,8 @@ Call           : ID LPAREN ExpList RPAREN                                     {
                                                                               }
                | ID LPAREN RPAREN                                             {
 																				  ArgumentList *arg_list = new ArgumentList();
-                                                                                  $$ = new Exp(GetFunction($1->name, arg_list->arguments)->return_type);
+																				  Function* f = GetFunction($1->name, arg_list->arguments);
+                                                                                  $$ = new Exp(f->return_type);
                                                                                   call_to_ir($$, $1, nullptr, f, false, buffer);
                                                                               }
 
@@ -484,7 +486,7 @@ ExpList        : Exp                                                          {
 
                                                                                   $$ = new ArgumentList();
                                                                                   $$->exp = $4->exp;
-                                                                                  $$-exp.push_back($1);
+                                                                                  $$->exp.push_back($1);
                                                                                   $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
 
                                                                               }
@@ -513,7 +515,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = "INT";
 
                                                                                   $$->reg = $2->reg;
-                                                                                  $$->trueList = $2->trueList;
+                                                                                  $$->true_list = $2->true_list;
                                                                                   $$->falseList = $2->falseList;
                                                                               }
                | Exp BINOP_ADD Exp                                            {
@@ -554,7 +556,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                           string cond = Generator::new_tmp();
                                                                                           buffer.emit(cond + " = icmp eq i32 " + $$->reg + ", 1");
                                                                                           int address = buffer.emit("br i1 " + cond + ", label @, label @");
-                                                                                          $$->trueList = CodeBuffer::merge($$->trueList, CodeBuffer::makelist({address, FIRST}));
+                                                                                          $$->true_list = CodeBuffer::merge($$->true_list, CodeBuffer::makelist({address, FIRST}));
                                                                                           $$->falseList = CodeBuffer::merge($$->falseList, CodeBuffer::makelist({address, SECOND}));
                                                                                       }
                                                                                   }
@@ -567,7 +569,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   if ($$->type != "VOID") {
                                                                                       $$->reg = $1->reg;
                                                                                   }
-                                                                                  $$->trueList = $1->trueList;
+                                                                                  $$->true_list = $1->true_list;
                                                                                   $$->falseList = $1->falseList;
                                                                               }
                | NUM                                                          {
@@ -598,7 +600,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = "BOOL";
 
                                                                                   int address = buffer.emit("br label @");
-                                                                                  $$->trueList = CodeBuffer::merge($$->trueList, CodeBuffer::makelist({address, FIRST}));
+                                                                                  $$->true_list = CodeBuffer::merge($$->true_list, CodeBuffer::makelist({address, FIRST}));
                                                                               }
                | FALSE                                                        {
                                                                                   $$ = new Exp("BOOL");
@@ -612,7 +614,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = "BOOL";
                                                                               }
                | Exp AND M Exp                                                {
-                                                                                  buffer.bpatch($1->trueList, $3->label);
+                                                                                  buffer.bpatch($1->true_list, $3->label);
                                                                                   $$ = ExecuteOperation($1, $3, ENUM_AND);
                                                                                   parser.ExpType = "BOOL";
                                                                               }
@@ -757,8 +759,8 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
          {
               if (exp1->type == "BOOL") {
                   Exp* exp = new Exp("BOOL");
-                  exp->falseList = var1->trueList;
-                  exp->trueList = var1->falseList;
+                  exp->falseList = exp1->trueList;
+                  exp->true_list = exp1->falseList;
                   return exp;
               }
               break;
@@ -775,7 +777,7 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
                          buffer.emit(cond + " = icmp " + command + " i32 " + exp1->reg + ", " + exp2->reg);
 
                      int address = buffer.emit("br i1 " + cond + ", label @, label @");
-                     ret->trueList = CodeBuffer::merge(ret->trueList, CodeBuffer::makelist({address, FIRST}));
+                     ret->true_list = CodeBuffer::merge(ret->true_list, CodeBuffer::makelist({address, FIRST}));
                      ret->falseList = CodeBuffer::merge(ret->falseList, CodeBuffer::makelist({address, SECOND}));
                      return ret;
                  }
@@ -793,7 +795,7 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
             if (exp1->type == "BOOL" && exp2->type == "BOOL") {
                 Exp *exp = new Exp("BOOL");
                 exp->falseList = CodeBuffer::merge(exp1->falseList, exp2->falseList);
-                exp->trueList = CodeBuffer::merge(exp->trueList, exp2->trueList);
+                exp->true_list = CodeBuffer::merge(exp->true_list, exp2->true_list);
                 return exp;
             }
             break;
@@ -802,7 +804,7 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
         {
            if (exp1->type == "BOOL" && exp2->type == "BOOL"){
                Exp *exp = new Exp("BOOL");
-               exp->trueList = CodeBuffer::merge(exp1->trueList, exp2->trueList);
+               exp->true_list = CodeBuffer::merge(exp1->true_list, exp2->true_list);
                exp->falseList = CodeBuffer::merge(exp->falseList, exp2->falseList);
                return exp;
            }
@@ -875,7 +877,7 @@ void exp_to_bool(Exp *exp, CodeBuffer& buffer) {
     buffer.bpatch(CodeBuffer::makelist({false_address, FIRST}), end_label);
     // buffer.bpatch(CodeBuffer::makelist({shit_address, FIRST}), true_label);
 
-    buffer.bpatch(exp->trueList, true_label);
+    buffer.bpatch(exp->true_list, true_label);
     buffer.bpatch(exp->falseList, false_label);
 }
 
@@ -907,8 +909,8 @@ void call_to_ir(Exp* call, Id* id, ExpList* expList, Function* f, bool is_with_a
         string cond = Generator::new_tmp();
         buffer.emit(cond + " = icmp ne i32 0, " + call->reg);
         int address = buffer.emit("br i1 " + cond + ", label @, label @");
-        call->trueList = CodeBuffer::merge(call->trueList, CodeBuffer::makelist({address, FIRST}));
-        call->falseList = CodeBuffer::merge(call->falseList, CodeBuffer::makelist({address, SECOND}));
+        call->true_list = CodeBuffer::merge(call->true_list, CodeBuffer::makelist({address, FIRST}));
+        call->false_list = CodeBuffer::merge(call->false_list, CodeBuffer::makelist({address, SECOND}));
     }
 }
 
