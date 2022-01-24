@@ -630,7 +630,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   string reg = Generator::new_tmp();
                                                                                   $$->reg = reg;
                                                                                   buffer.emit(reg + " = add i32 "+$4->reg + ", 0");
-                                                                                  if($$->type == "BOOL") {
+                                                                                  if($2->type == "BOOL") {
                                                                                       buffer.emit(reg + " = and i32 " + reg + ", 255");
                                                                                   }
 
