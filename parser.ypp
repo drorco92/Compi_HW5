@@ -410,12 +410,12 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                   buffer.bpatch($5->true_list, $9->label);
                                                                                   buffer.bpatch($10->nextList, $4->label);
                                                                                   buffer.bpatch($3->nextList, $4->label);
-                                                                                  $$->nextList = CodeBuffer::merge($6->false_list, $10->breakList);
+                                                                                  $$->nextList = CodeBuffer::merge($5->false_list, $10->breakList);
                                                                                   buffer.emit("br label %" + $4->label);
                                                                                   string label = buffer.genLabel();
                                                                                   // buffer.bpatch($$->nextList, label);
                                                                                   buffer.bpatch($10->breakList, label);
-                                                                                  buffer.bpatch($6->false_list, label);
+                                                                                  buffer.bpatch($5->false_list, label);
                                                                               }
                | BREAK SC                                                     {
                                                                                   parser.AssertBreakLegal();
