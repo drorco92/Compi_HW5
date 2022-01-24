@@ -627,6 +627,9 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                               }
                | LPAREN Type RPAREN Exp                                       {
                                                                                   $$ = NewCastedExp($4, $2->type);//TODO add things for hw5
+                                                                                  string reg = Generator::new_tmp();
+                                                                                  $$->reg = reg;
+
                                                                               }
 ScopeStart      :                                                             {
                                                                                   parser.symbolTable.OpenScope();
