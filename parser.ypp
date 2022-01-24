@@ -629,10 +629,16 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$ = NewCastedExp($4, $2->type);//TODO add things for hw5
                                                                                   string reg = Generator::new_tmp();
                                                                                   $$->reg = reg;
-                                                                                  buffer.emit(reg + " = add "+$$->type+ " "+$4->reg + ", 0");
-                                                                                  if($$->type == "BOOL") {
-                                                                                      buffer.emit(reg + " = and i32 " + reg + ", 255");
+                                                                                  if($$->type == "INT") {
+                                                                                      buffer.emit(reg + " = add i32 "+$4->reg + ", 0");
                                                                                   }
+                                                                                  else {
+                                                                                      buffer.emit(reg + " = add i8 "+$4->reg + ", 0");
+                                                                                      if($$->type == "BOOL") {
+                                                                                          buffer.emit(reg + " = and i8 " + reg + ", 255");
+                                                                                      }
+                                                                                  }
+
 
 
                                                                               }
