@@ -769,7 +769,7 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
          case(ENUM_RELOP):
          {
              if (NumberType(exp1) && NumberType(exp2)) {
-                 return new Exp("BOOL");
+                 Exp* ret = new Exp("BOOL");
                  string cond = Generator::new_tmp();
                      if (exp1->type == "BYTE" && exp2->type == "BYTE" && command != "eq" && command != "ne") // unsigned ops for lt,gt,le,ge
                          buffer.emit(cond + " = icmp " + "u" + command.substr(1) + " i32 " + exp1->reg + ", " + exp2->reg);
