@@ -217,7 +217,7 @@ FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
                                                                                   parser.ScopeReturnType = "";
                                                                                   parser.symbolTable.CloseScope();
                                                                                   if(1) {
-                                                                                      if(parser.ScopeReturnType == "VOID" || parser.ScopeReturnType == "") {
+                                                                                      if(parser.ScopeReturnType == "VOID") {
                                                                                           buffer.emit("ret void");
                                                                                       }
                                                                                       else {
