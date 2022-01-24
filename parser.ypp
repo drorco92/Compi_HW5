@@ -214,7 +214,6 @@ FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
                                                                               }
                  Statements RBRACE                                                
 																			  {
-                                                                                  parser.ScopeReturnType = "";
                                                                                   parser.symbolTable.CloseScope();
                                                                                   if(1) {
                                                                                       if(parser.ScopeReturnType == "VOID") {
