@@ -26,7 +26,7 @@
     Function* GetFunction(string name, ArgVector& args);
     void AssertFunctionUseLegal(ArgVector& expected, ArgVector& current, string name);
     string GetAnnotation(string name);
-    Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& command, CodeBuffer* buffer);
+    Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& command, CodeBuffer& buffer);
     string GetType(string name);
     void AssertAssignLegal(string type1, string type2);
     bool NumberType(Exp* exp);
@@ -523,7 +523,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = "INT";
                                                                               }
                | Exp BINOP_SUB Exp                                            {
-                                                                                  $$ = ExecuteOperation($1, $3, ENUM_SUB, "sub", buffer);
+                                                                                  $$ = ExecuteOperation($1, $3, ENUM_BINOP, "sub", buffer);
                                                                                   parser.ExpType = "INT";
                                                                               }
                | Exp BINOP_MULTIPLY Exp                                       {
