@@ -515,7 +515,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = $$->type;
                                                                               }
                | Exp BINOP_DIV Exp                                       {
-                                                                                  $$ = ExecuteOperation($1, $3, ENUM_BINOP, "div", buffer);
+                                                                                  $$ = ExecuteOperation($1, $3, ENUM_BINOP, "sdiv", buffer);
                                                                                   parser.ExpType = $$->type;
                                                                               }
                | ID                                                           {
