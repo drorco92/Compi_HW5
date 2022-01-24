@@ -456,7 +456,7 @@ Call           : ID LPAREN ExpList RPAREN                                     {
 ExpList        : Exp                                                          {
                                                                                   $$ = new ArgumentList();
                                                                                   $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
-                                                                                  $$->exp.push_back($1);
+                                                                                  //$$->exp.push_back($1);
                                                                                   if ($1->type == "BOOL") {
                                                                                       exp_to_bool($1, buffer);
                                                                                   }
@@ -469,8 +469,8 @@ ExpList        : Exp                                                          {
                ExpList                                                        {
 
                                                                                   $$ = new ArgumentList();
-                                                                                  $$->exp = $4->exp;//TODO remove the ->exp
-                                                                                  $$->exp.push_back($1);
+                                                                                  $$ = $4;//TODO remove the ->exp
+                                                                                  //$$->exp.push_back($1);
                                                                                   $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
 
                                                                               }
