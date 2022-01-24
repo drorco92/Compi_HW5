@@ -956,10 +956,10 @@ void div_handler(Exp* var1, Exp* var2, string& m_reg, CodeBuffer &buffer){
     int exitAddress = buffer.emit("br label @");
     string okLabel = buffer.genLabel();
 
-    if (var1->m_type == "BYTE" && var2->m_type == "BYTE")
-        emit_op(m_reg, var1->m_reg, var2->m_reg, "udiv", buffer);
+    if (exp1->m_type == "BYTE" && exp2->m_type == "BYTE")
+        emit_op(m_reg, exp1->m_reg, exp2->m_reg, "udiv", buffer);
     else
-        emit_op(m_reg, var1->m_reg, var2->m_reg, "sdiv", buffer);
+        emit_op(m_reg, exp1->m_reg, exp2->m_reg, "sdiv", buffer);
 
     // bpatch error handling
     buffer.bpatch(CodeBuffer::makelist({address, FIRST}), zeroDivLabel);
