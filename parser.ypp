@@ -50,7 +50,6 @@
 		void AssertReturn(const string& retType){
 			if (retType != ScopeReturnType && !(ScopeReturnType == "INT" && retType == "BYTE"))
 			{
-			    std::cout << "AssertReturn" << std::endl;
 				output::errorMismatch(yylineno);
 				exit(0);
 			}
@@ -311,7 +310,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                | TypeAnnotation Type ID ASSIGN Exp SC                         {
 																				 AssertAssignLegal($2->type, $5->type);
                                                                                  parser.symbolTable.AddSymbol($1->type, $3->name, $2->type);
-                                                                                 if ($1->type == "BOOL") {
+                                                                                 if ($2->type == "BOOL") {
                                                                                     exp_to_bool($5, buffer);
                                                                                  }
 
@@ -357,7 +356,6 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                | RETURN Exp SC                                                {
                                                                                   return_happened = true;
 																				  if(parser.ScopeReturnType == "VOID") {
-																				    std::cout << "RETURN Exp SC" << std::endl;
 																					output::errorMismatch(yylineno);
 																					exit(1);
 																				  }
@@ -576,7 +574,6 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   buffer.emitGlobal($$->reg + " = global [" + $$->size + " x i8] c\"" + yylval.id->name + "\\00\"");
                                                                               }
                | TRUE                                                         {
-                                                                                  std::cout << "GOZER TRUE" << std::endl;
                                                                                   $$ = new Exp("BOOL");
                                                                                   parser.ExpType = "BOOL";
 
@@ -643,7 +640,6 @@ ScopeEnd        :                                                             {
 CheckBool		:															  {
                                                                                   if (parser.ExpType !="BOOL")
                                                                                   {
-                                                                                      std::cout << "CheckBool" << std::endl;
                                                                                       errorMismatch(yylineno);
                                                                                       exit(1);
                                                                                   }
@@ -676,7 +672,6 @@ inline void CheckLegalB(int n)
 
 void AssertAssignLegal(string type1, string type2) {
     if((type1 != type2 && (type1 != "INT" || type2 != "BYTE")) || type1 == "VOID") {
-        std::cout << "AssertAssignLegal" << std::endl;
         errorMismatch(yylineno);
         exit(1);
     }
@@ -732,7 +727,6 @@ string GetAnnotation(string name) {
 
 Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& command, CodeBuffer& buffer) {
     if(exp1->type == "STRING" || exp2->type == "STRING") {
-        std::cout << "Ececute operation - START" << std::endl;
         errorMismatch(yylineno);
         exit(1);
     }
@@ -816,7 +810,6 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
             break;
         }
     }
-    std::cout << "Ececute operation - END" << std::endl;
     errorMismatch(yylineno);
     exit(1);
 }
@@ -838,7 +831,6 @@ Exp* NewCastedExp(const Exp* exp, const string& type) {
     if((type == "BYTE" || type == "INT") && (eType == "BYTE" || eType == "INT")){
         return new Exp(type);
     }
-    std::cout << "NewCastedexp" << std::endl;
     errorMismatch(yylineno);
     exit(1);
 }
@@ -851,7 +843,6 @@ void exp_to_bool(Exp *exp, CodeBuffer& buffer) {
     int false_address = buffer.emit("br label @");
     string end_label = buffer.genLabel();
     buffer.emit(exp->reg + " = phi i32 [1, %" + true_label + "], [0, %" + false_label + "]");
-    std::cout << "True address : [" << true_address << "]" << std::endl;
     buffer.bpatch(CodeBuffer::makelist({true_address, FIRST}), end_label);
     buffer.bpatch(CodeBuffer::makelist({false_address, FIRST}), end_label);
     // buffer.bpatch(CodeBuffer::makelist({shit_address, FIRST}), true_label);
