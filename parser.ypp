@@ -885,7 +885,7 @@ void exp_to_bool(Exp *exp, CodeBuffer& buffer) {
 
 
 
-void call_to_ir(Exp* call, Id* id, ExpList* expList, Function* f, bool is_with_args, CodeBuffer& buffer) {
+void call_to_ir(Exp* call, Id* id, ArgumentList* expList, Function* f, bool is_with_args, CodeBuffer& buffer) {
     string ir_ret_type = f->return_type == "VOID" ? "void" : "i32";
     string call_string;
     if(f->return_type != "VOID") {
