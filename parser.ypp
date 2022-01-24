@@ -629,6 +629,11 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$ = NewCastedExp($4, $2->type);//TODO add things for hw5
                                                                                   string reg = Generator::new_tmp();
                                                                                   $$->reg = reg;
+                                                                                  buffer.emit(reg + " = add "+$$->type+ " "+$4->reg + ", 0");
+                                                                                  if($$->type == "BOOL") {
+                                                                                      buffer.emit(reg + " = and i32 " + reg + ", 255");
+                                                                                  }
+
 
                                                                               }
 ScopeStart      :                                                             {
