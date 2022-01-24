@@ -34,7 +34,7 @@
     int yyerror(const char* message);
     void ValidateType(const string& x, const string& y);
     void exp_to_bool(Exp *bool_exp, CodeBuffer& buffer);
-    void call_to_ir(Exp* call, Id* id, ExpList* expList, Function* f, bool is_with_args, CodeBuffer& buffer);
+    void call_to_ir(Exp* call, Id* id, ArgumentList* expList, Function* f, bool is_with_args, CodeBuffer& buffer);
     void declarePrerequisites(CodeBuffer& buffer);
 
 	class Parser {
