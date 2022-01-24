@@ -51,6 +51,7 @@
 		void AssertReturn(const string& retType){
 			if (retType != ScopeReturnType && !(ScopeReturnType == "INT" && retType == "BYTE"))
 			{
+			    std::cout << "AssertReturn" << std::endl;
 				output::errorMismatch(yylineno);
 				exit(0);
 			}
@@ -358,6 +359,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                | RETURN Exp SC                                                {
                                                                                   return_happened = true;
 																				  if(parser.ScopeReturnType == "VOID") {
+																				    std::cout << "RETURN Exp SC" << std::endl;
 																					output::errorMismatch(yylineno);
 																					exit(1);
 																				  }
@@ -642,6 +644,7 @@ ScopeEnd        :                                                             {
 CheckBool		:															  {
                                                                                   if (parser.ExpType !="BOOL")
                                                                                   {
+                                                                                      std::cout << "CheckBool" << std::endl;
                                                                                       errorMismatch(yylineno);
                                                                                       exit(1);
                                                                                   }
@@ -674,6 +677,7 @@ inline void CheckLegalB(int n)
 
 void AssertAssignLegal(string type1, string type2) {
     if((type1 != type2 && (type1 != "INT" || type2 != "BYTE")) || type1 == "VOID") {
+        std::cout << "AssertAssignLegal" << std::endl;
         errorMismatch(yylineno);
         exit(1);
     }
@@ -729,6 +733,7 @@ string GetAnnotation(string name) {
 
 Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& command, CodeBuffer& buffer) {
     if(exp1->type == "STRING" || exp2->type == "STRING") {
+        std::cout << "Ececute operation - START" << std::endl;
         errorMismatch(yylineno);
         exit(1);
     }
@@ -812,6 +817,7 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
             break;
         }
     }
+    std::cout << "Ececute operation - END" << std::endl;
     errorMismatch(yylineno);
     exit(1);
 }
@@ -833,6 +839,7 @@ Exp* NewCastedExp(const Exp* exp, const string& type) {
     if((type == "BYTE" || type == "INT") && (eType == "BYTE" || eType == "INT")){
         return new Exp(type);
     }
+    std::cout << "NewCastedexp" << std::endl;
     errorMismatch(yylineno);
     exit(1);
 }
@@ -840,6 +847,7 @@ Exp* NewCastedExp(const Exp* exp, const string& type) {
 void ValidateType(const string& x, const string& y) {
     if (x != y)
         {
+            std::cout << "ValidateType" << std::endl;
             output::errorMismatch(yylineno);
             exit(0);
         }
