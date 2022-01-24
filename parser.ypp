@@ -413,15 +413,15 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                               {
                                                                                   parser.ExitLoopScope();
                                                                                   $$ = new Block();
-                                                                                  buffer.bpatch($9->continueList, $4->label);
-                                                                                  buffer.bpatch($5->true_list, $8->label);
-                                                                                  buffer.bpatch($9->nextList, $4->label);
+                                                                                  buffer.bpatch($10->continueList, $4->label);
+                                                                                  buffer.bpatch($5->true_list, $9->label);
+                                                                                  buffer.bpatch($10->nextList, $4->label);
                                                                                   buffer.bpatch($3->nextList, $4->label);
-                                                                                  $$->nextList = CodeBuffer::merge($5->false_list, $9->breakList);
+                                                                                  $$->nextList = CodeBuffer::merge($5->false_list, $10->breakList);
                                                                                   buffer.emit("br label %" + $4->label);
                                                                                   string label = buffer.genLabel();
                                                                                   // buffer.bpatch($$->nextList, label);
-                                                                                  buffer.bpatch($9->breakList, label);
+                                                                                  buffer.bpatch($10->breakList, label);
                                                                                   buffer.bpatch($5->false_list, label);
                                                                               }
                | BREAK SC                                                     {
