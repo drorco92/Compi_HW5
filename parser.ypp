@@ -309,16 +309,22 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                               }
                | TypeAnnotation Type ID ASSIGN Exp SC                         {
 																				 AssertAssignLegal($2->type, $5->type);
-                                                                                 parser.symbolTable.AddSymbol($1->type, $3->name, $2->type);
-                                                                                 if ($2->type == "BOOL") {
-                                                                                    exp_to_bool($5, buffer);
+                                                                                 int val = stoi(Exp->val);
+                                                                                 if($1->type == "CONST" && (Type == "INT" || Type == "BYTE") && Exp->print_val == true){
+                                                                                    parser.symbolTable.AddSymbol($1->type, $3->name, $2->type, $5->val);
+                                                                                 }
+                                                                                 else
+                                                                                 {
+                                                                                    parser.symbolTable.AddSymbol($1->type, $3->name, $2->type);
+                                                                                    if ($2->type == "BOOL") {
+                                                                                        exp_to_bool($5, buffer);
+                                                                                    }
+                                                                                    string offset = to_string(parser.symbolTable.GetSymbol($3->name, false)->offset + args_amount);
+                                                                                    string ptr = Generator::new_tmp();
+                                                                                    buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
+                                                                                    buffer.emit("store i32 " + $5->reg + ", i32* " + ptr);
                                                                                  }
 
-                                                                                 string offset = to_string(parser.symbolTable.GetSymbol($3->name, false)->offset + args_amount);
-                                                                                 string ptr = Generator::new_tmp();
-
-                                                                                 buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
-                                                                                 buffer.emit("store i32 " + $5->reg + ", i32* " + ptr);
                                                                                  $$ = new Block();
                                                                               }
                | ID ASSIGN Exp SC                                             {
@@ -333,9 +339,14 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                   }
                                                                                   string offset = to_string(parser.symbolTable.GetSymbol($1->name, false)->offset + args_amount);
                                                                                   string ptr = Generator::new_tmp();
+                                                                                  if($3->print_val == true){
+                                                                                        buffer.emit("store i32 " + $3->val + ", i32* " + ptr);
+                                                                                  }
+                                                                                  else{
+                                                                                      buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
+                                                                                      buffer.emit("store i32 " + $3->reg + ", i32* " + ptr);
+                                                                                  }
 
-                                                                                  buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
-                                                                                  buffer.emit("store i32 " + $3->reg + ", i32* " + ptr);
                                                                                   $$ = new Block();
                                                                               }
                | Call SC                                                      {
@@ -364,8 +375,12 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 																				  if (parser.ScopeReturnType == "BOOL") {
                                                                                       exp_to_bool($2, buffer);
                                                                                   }
-
-                                                                                  buffer.emit("ret i32 " + $2->reg);
+                                                                                  if($2->print_val == true){
+                                                                                     buffer.emit("ret i32 " + $2->val);
+                                                                                  }
+                                                                                  else{
+                                                                                      buffer.emit("ret i32 " + $2->reg);
+                                                                                  }
                                                                                   $$ = new Block();
                                                                               }
                | IfScope %prec IF
@@ -469,7 +484,7 @@ ExpList        : Exp                                                          {
                ExpList                                                        {
 
                                                                                   $$ = new ArgumentList();
-                                                                                  $$ = $4;//TODO remove the ->exp
+                                                                                  $$ = $4;
                                                                                   $$->exp.push_back($1);
                                                                                   $$->arguments.push_back(Argument($1->type, $1->name, $1->type));
 
@@ -526,18 +541,24 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$->name = $1->name;
                                                                                   parser.ExpType = GetType($1->name);
 
-                                                                                  string ptr = Generator::new_tmp();
-                                                                                  $$->reg = Generator::new_tmp();
-                                                                                  string offset = to_string(sym->offset + args_amount);
-                                                                                  buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
-                                                                                  buffer.emit($$->reg + " = load i32, i32* " + ptr);
+                                                                                  if(sym->to_print == true){
+                                                                                     $$->print_val = true;
+                                                                                     $$->val = sym->val;
+                                                                                  }
+                                                                                  else{
+                                                                                      string ptr = Generator::new_tmp();
+                                                                                      $$->reg = Generator::new_tmp();
+                                                                                      string offset = to_string(sym->offset + args_amount);
+                                                                                      buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
+                                                                                      buffer.emit($$->reg + " = load i32, i32* " + ptr);
 
-                                                                                  if (sym->type == "BOOL") {
-                                                                                      string cond = Generator::new_tmp();
-                                                                                      buffer.emit(cond + " = icmp eq i32 " + $$->reg + ", 1");
-                                                                                      int address = buffer.emit("br i1 " + cond + ", label @, label @");
-                                                                                      $$->true_list = CodeBuffer::merge($$->true_list, CodeBuffer::makelist({address, FIRST}));
-                                                                                      $$->false_list = CodeBuffer::merge($$->false_list, CodeBuffer::makelist({address, SECOND}));
+                                                                                      if (sym->type == "BOOL") {
+                                                                                          string cond = Generator::new_tmp();
+                                                                                          buffer.emit(cond + " = icmp eq i32 " + $$->reg + ", 1");
+                                                                                          int address = buffer.emit("br i1 " + cond + ", label @, label @");
+                                                                                          $$->true_list = CodeBuffer::merge($$->true_list, CodeBuffer::makelist({address, FIRST}));
+                                                                                          $$->false_list = CodeBuffer::merge($$->false_list, CodeBuffer::makelist({address, SECOND}));
+                                                                                      }
                                                                                   }
                                                                               }
                | Call                                                         {
@@ -553,7 +574,8 @@ Exp            : LPAREN Exp RPAREN                                            {
                | NUM                                                          {
 																				  $$ = new Exp("INT");
                                                                                   parser.ExpType = "INT";
-
+                                                                                  $$->val =to_string(yylval.val);
+                                                                                  $$->print_val = true;
                                                                                   $$->reg = Generator::new_tmp();
                                                                                   buffer.emit($$->reg + " = add i32 0, " + to_string(yylval.val));
                                                                               }
@@ -561,7 +583,8 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                 CheckLegalB(yylval.val);
                                                                                   $$ = new Exp("BYTE");
                                                                                   parser.ExpType = "BYTE";
-
+                                                                                  $$->val =to_string(yylval.val);
+                                                                                  $$->print_val = true;
                                                                                   $$->reg = Generator::new_tmp();
                                                                                   buffer.emit($$->reg + " = add i32 0, " + to_string(yylval.val));
                                                                               }
@@ -626,7 +649,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = "BOOL";
                                                                               }
                | LPAREN Type RPAREN Exp                                       {
-                                                                                  $$ = NewCastedExp($4, $2->type);//TODO add things for hw5
+                                                                                  $$ = NewCastedExp($4, $2->type);
                                                                                   string reg = Generator::new_tmp();
                                                                                   $$->reg = reg;
 
@@ -741,6 +764,15 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
         exit(1);
     }
 
+    string exp1_print = exp1->reg;
+    string exp2_print = exp2->reg;
+    if(exp1->print_val) {
+        exp1_print = exp1->val;
+    }
+    if(exp1->print_val) {
+        exp2_print = exp2->val;
+    }
+
     switch(operation)
     {
          case(ENUM_NOT):
@@ -760,9 +792,9 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
                  Exp* ret = new Exp("BOOL");
                  string cond = Generator::new_tmp();
                      if (exp1->type == "BYTE" && exp2->type == "BYTE" && command != "eq" && command != "ne") // unsigned ops for lt,gt,le,ge
-                         buffer.emit(cond + " = icmp " + "u" + command.substr(1) + " i32 " + exp1->reg + ", " + exp2->reg);
+                         buffer.emit(cond + " = icmp " + "u" + command.substr(1) + " i32 " + exp1_print + ", " + exp2_print);
                      else
-                         buffer.emit(cond + " = icmp " + command + " i32 " + exp1->reg + ", " + exp2->reg);
+                         buffer.emit(cond + " = icmp " + command + " i32 " + exp1_print + ", " + exp2_print);
 
                      int address = buffer.emit("br i1 " + cond + ", label @, label @");
                      ret->true_list = CodeBuffer::merge(ret->true_list, CodeBuffer::makelist({address, FIRST}));
@@ -806,7 +838,7 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
                 if (command == "sdiv") // special handling
                     div_handler(exp1, exp2, reg, buffer);
                 else
-                    emit_op(reg, exp1->reg, exp2->reg, command, buffer);
+                    emit_op(reg, exp1_print, exp2_print, command, buffer);
 
                 if(exp1->type == "INT" || exp2->type == "INT")
                     return new Exp("INT", reg);
@@ -925,8 +957,16 @@ void declarePrerequisites(CodeBuffer& buffer) {
 
 void div_handler(Exp* exp1, Exp* exp2, string& reg, CodeBuffer &buffer){
     // first check for a zero div error
+    string exp1_print = exp1->reg;
+    string exp2_print = exp2->reg;
+    if(exp1->print_val) {
+        exp1_print = exp1->val;
+    }
+    if(exp1->print_val) {
+        exp2_print = exp2->val;
+    }
     string cond = Generator::new_tmp();
-    buffer.emit(cond + " = icmp eq i32 0, " + exp2->reg);
+    buffer.emit(cond + " = icmp eq i32 0, " + exp2_print);
     int address = buffer.emit("br i1 " + cond + ", label @, label @");
     string zeroDivLabel = buffer.genLabel();
     buffer.emit("call i32 (i8*, ...) @printf(i8* getelementptr ([24 x i8], [24 x i8]* @zero_div_error, i32 0, i32 0))");
@@ -935,9 +975,9 @@ void div_handler(Exp* exp1, Exp* exp2, string& reg, CodeBuffer &buffer){
     string okLabel = buffer.genLabel();
 
     if (exp1->type == "BYTE" && exp2->type == "BYTE")
-        emit_op(reg, exp1->reg, exp2->reg, "udiv", buffer);
+        emit_op(reg, exp1_print, exp2_print, "udiv", buffer);
     else
-        emit_op(reg, exp1->reg, exp2->reg, "sdiv", buffer);
+        emit_op(reg, exp1_print, exp2_print, "sdiv", buffer);
 
     // bpatch error handling
     buffer.bpatch(CodeBuffer::makelist({address, FIRST}), zeroDivLabel);

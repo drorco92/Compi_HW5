@@ -41,8 +41,10 @@ typedef std::stack<int> OffsetStack;
 
 class Variable : public Symbol {
 public:
-    Variable(std::string name, int offset, std::string type, std::string type_annotation);
+    Variable(std::string name, int offset, std::string type, std::string type_annotation, std::string value = "");
     std::string type_annotation;
+    std::string val = "";
+    bool to_print = false;
     void print() override;
 };
 

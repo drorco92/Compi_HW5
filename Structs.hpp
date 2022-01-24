@@ -27,7 +27,8 @@ struct Exp {
     std::string type;
     std::string size;
     std::string reg;
-    int val;
+    string val;
+    bool print_val = false;
     size_t string_len;
     vector<pair<int,BranchLabelIndex>> true_list;
     vector<pair<int,BranchLabelIndex>> false_list;

@@ -8,7 +8,12 @@ extern int yylineno;
 
 
 //======================================================================================
-Variable::Variable(string name, int offset, string type, string type_annotation) : Symbol(name, offset, type), type_annotation(type_annotation) {}
+Variable::Variable(string name, int offset, string type, string type_annotation, std::string value) : Symbol(name, offset, type), type_annotation(type_annotation) {
+    if(value != ""){
+        this->to_print = true;
+        this->val = value;
+    }
+}
 void Variable::print() {output::printID(name, offset, type);}
 
 //======================================================================================
