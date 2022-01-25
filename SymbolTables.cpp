@@ -22,7 +22,7 @@ Function::Function(string name, string return_type, ArgVector& args) : Symbol(na
 Function::~Function() {}
 
 
-string Function::ir_params() {
+string Function::parameters() {
     string res("(");
     if (!this->args.empty()) {
         res += "i32";
