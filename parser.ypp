@@ -307,8 +307,6 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                  buffer.emit("store i32 0, i32* " + ptr);
                                                                                  $$ = new Block();
                                                                               }
-               | TypeAnnotation Type ID ASSIGN NUM SC                   {std::cout << "IN PREC NUM" << std::endl;}
-               | TypeAnnotation Type ID ASSIGN NUM B SC                   {std::cout << "IN PREC NUM B" << std::endl;}
                | TypeAnnotation Type ID ASSIGN Exp SC                         {
 																				 AssertAssignLegal($2->type, $5->type);
 																				 bool converted =false;
