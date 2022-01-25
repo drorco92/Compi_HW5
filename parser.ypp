@@ -90,12 +90,12 @@
         string frame_ptr;
         int num_args;
         bool generated_return = false;
-        static string new_tmp() {
+        string new_tmp() {
             string var = "%t" + to_string(var_num);
             var_num++;
             return var;
         }
-        static string new_string() {
+        string new_string() {
             string str = "@s" + to_string(str_num);
             str_num++;
             return str;
