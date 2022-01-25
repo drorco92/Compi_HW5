@@ -856,7 +856,7 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
                 if (command == "sdiv") // special handling
                     div_handler(exp1, exp2, reg, buffer);
                 else
-                    buff.emit(reg + " = " + command + " i32 " + exp1_print + ", " + exp2_print);
+                    buffer.emit(reg + " = " + command + " i32 " + exp1_print + ", " + exp2_print);
                 if(exp1->type == "INT" || exp2->type == "INT")
                     return new Exp("INT", reg);
                 else{
@@ -985,9 +985,9 @@ void div_handler(Exp* exp1, Exp* exp2, string& reg, CodeBuffer &buffer){
     string okLabel = buffer.genLabel();
 
     if (exp1->type == "BYTE" && exp2->type == "BYTE")
-        buff.emit(reg + " = " + "udiv" + " i32 " + exp1_print + ", " + exp2_print);
+        buffer.emit(reg + " = " + "udiv" + " i32 " + exp1_print + ", " + exp2_print);
     else
-        buff.emit(reg + " = " + "sdiv" + " i32 " + exp1_print + ", " + exp2_print);
+        buffer.emit(reg + " = " + "sdiv" + " i32 " + exp1_print + ", " + exp2_print);
     buffer.bpatch(CodeBuffer::makelist({address, FIRST}), zeroDivLabel);
     buffer.bpatch(CodeBuffer::makelist({address, SECOND}), okLabel);
     buffer.bpatch(CodeBuffer::makelist({exitAddress, FIRST}), okLabel);
