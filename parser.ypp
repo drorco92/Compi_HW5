@@ -558,6 +558,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                     std::cout << "TO PRINT IS : " << ((Variable*)sym)->to_print << "  VALLLL IS " <<  ((Variable*)sym)->val << "ANOTATION ISSS " << ((Variable*)sym)->type_annotation;
                                                                                   }
                                                                                   if(((Variable*)sym)->to_print == true && ((Variable*)sym)->type_annotation == "CONST"){
+                                                                                     $$->annotation = "CONST";
                                                                                      $$->print_val = true;
                                                                                      $$->val = ((Variable*)sym)->val;
                                                                                   }
