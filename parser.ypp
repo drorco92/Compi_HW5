@@ -394,6 +394,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                   else{
                                                                                       buffer.emit("ret i32 " + $2->reg);
                                                                                   }
+                                                                                  return_happened = true;
                                                                                   $$ = new Block();
                                                                               }
                | IfScope %prec IF
