@@ -223,6 +223,7 @@ FuncDecl       : RetType ID LPAREN Formals RPAREN                             {
                                                                                           buffer.emit(ret_val + " = add i32 0, 0");
                                                                                           buffer.emit("ret i32 " + ret_val);
                                                                                       }
+                                                                                      return_happened = true;
                                                                                   }
                                                                                   buffer.emit("}");
                                                                                   parser.ScopeReturnType = "";
