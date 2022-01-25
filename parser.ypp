@@ -309,7 +309,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                               }
                | TypeAnnotation Type ID ASSIGN Exp SC                         {
 																				 AssertAssignLegal($2->type, $5->type);
-                                                                                 int val = stoi($5->val);
+                                                                                 int val = std::stoi($5->val);
                                                                                  if($1->type == "CONST" && ($2->type == "INT" || $2->type == "BYTE") && $5->print_val == true){
                                                                                     parser.symbolTable.AddSymbol($1->type, $3->name, $2->type, $5->val);
                                                                                  }
