@@ -112,8 +112,6 @@ typedef union Node
     CodeGenLabel* label;
     CodeGenBlock* block;
     CodeGenScope* scope;
-    CaseStack* case_stack;
-    Case* case_struct;
 } STYPE;
 
 

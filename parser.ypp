@@ -261,11 +261,11 @@ FormalDecl     : TypeAnnotation Type ID                                       {
 
 IfScope        : IF LPAREN Exp CheckBool RPAREN MarkInIf ScopeStart Statement ScopeEnd
                                                                               {
-                                                                                  $$ = new Scope($3, $6->label, $8->nextList, $8->breakList, $8->continueList);
+                                                                                  $$ = new CodeGenScope($3, $6->label, $8->nextList, $8->breakList, $8->continueList);
                                                                               }
 
 ElseScope      :   ELSE N M ScopeStart Statement ScopeEnd                    {
-                                                                                  $$ = new Scope(nullptr, $3->label, buffer.merge($2->nextList, $5->nextList), buffer.merge($2->breakList, $5->breakList), buffer.merge($2->continueList, $5->continueList));
+                                                                                  $$ = new CodeGenScope(nullptr, $3->label, buffer.merge($2->nextList, $5->nextList), buffer.merge($2->breakList, $5->breakList), buffer.merge($2->continueList, $5->continueList));
                                                                               }
 
 M           :   /* No Action */                                               { $$ = new CodeGenLabel(buffer.genLabel()); }
