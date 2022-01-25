@@ -330,7 +330,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                     string offset = to_string(parser.symbolTable.GetSymbol($3->name, false)->offset + args_amount);
                                                                                     string ptr = Generator::new_tmp();
                                                                                     if($5->print_val && $5->annotation == "CONST"){
-                                                                                        std::cout << "VAL IS :" << $5->val << std::endl;
+                                                                                        //std::cout << "VAL IS :" << $5->val << std::endl;
                                                                                         buffer.emit("store i32 " + $5->val + ", i32* " + ptr);
                                                                                     }
                                                                                     else{
@@ -555,7 +555,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$->name = $1->name;
                                                                                   parser.ExpType = GetType($1->name);
                                                                                   if($1->name == "i"){
-                                                                                    std::cout << "TO PRINT IS : " << ((Variable*)sym)->to_print << "  VALLLL IS " <<  ((Variable*)sym)->val << "ANOTATION ISSS " << ((Variable*)sym)->type_annotation;
+                                                                                    //std::cout << "TO PRINT IS : " << ((Variable*)sym)->to_print << "  VALLLL IS " <<  ((Variable*)sym)->val << "ANOTATION ISSS " << ((Variable*)sym)->type_annotation;
                                                                                   }
                                                                                   if(((Variable*)sym)->to_print == true && ((Variable*)sym)->type_annotation == "CONST"){
                                                                                      $$->annotation = "CONST";
