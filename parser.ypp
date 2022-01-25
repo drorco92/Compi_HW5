@@ -330,6 +330,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                     string offset = to_string(parser.symbolTable.GetSymbol($3->name, false)->offset + args_amount);
                                                                                     string ptr = Generator::new_tmp();
                                                                                     if($5->print_val && $5->annotation == "CONST"){
+                                                                                        std::cout << "VAL IS :" << $5->val << std::endl;
                                                                                         buffer.emit("store i32 " + $5->val + ", i32* " + ptr);
                                                                                     }
                                                                                     else{
