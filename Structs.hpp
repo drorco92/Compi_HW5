@@ -109,9 +109,9 @@ typedef union Node
 	Exp* exp;
     Id* id;
     int val;
-    CodeGenLabel* label;
-    CodeGenBlock* block;
     CodeGenScope* scope;
+    CodeGenBlock* block;
+    CodeGenLabel* label;
 } STYPE;
 
 
