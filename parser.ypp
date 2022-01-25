@@ -86,7 +86,7 @@
     public:
         size_t str_num = 0;
         size_t var_num = 0;
-        bool if_scope_start = false;
+        bool if_scope_started = false;
         string frame_ptr;
         int num_args;
         bool generated_return = false;
