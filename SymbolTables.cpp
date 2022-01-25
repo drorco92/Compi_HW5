@@ -133,6 +133,7 @@ void TablesList::AddSymbol(const string& name, const string& return_type, ArgVec
     this->tables.back()->symbols.push_back(function_symbol);
 }
 
+
 void TablesList::AddArgsSymbols(ArgVector& args) {
     int args_offset = -1;
 
