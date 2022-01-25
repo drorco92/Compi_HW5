@@ -337,8 +337,8 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 
                                                                                  $$ = new Block();
                                                                               }
-               | TypeAnnotation Type ID ASSIGN %prec NUM SC                   {std::cout << "IN PREC NUM" << std::endl}
-               | TypeAnnotation Type ID ASSIGN %prec NUM B SC                   {std::cout << "IN PREC NUM B" << std::endl}
+               | TypeAnnotation Type ID ASSIGN %prec NUM SC                   {std::cout << "IN PREC NUM" << std::endl;}
+               | TypeAnnotation Type ID ASSIGN %prec NUM B SC                   {std::cout << "IN PREC NUM B" << std::endl;}
                | ID ASSIGN Exp SC                                             {
 																				  if(GetAnnotation($1->name) == "CONST") {
 																					output::errorConstMismatch(yylineno);
