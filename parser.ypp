@@ -913,7 +913,7 @@ void SCE(Exp *exp, CodeBuffer& buffer) {
 
 void HandleCall(Exp* call, Id* id, ArgumentList* expList, Function* func, bool args_exists, CodeBuffer& buffer) {
     string call_string;
-    string ir_ret_type; = func->return_type == "VOID" ? "void" : "i32";
+    string ret_t;
     if(func->return_type == "VOID") {
         ret_t = "void";
     }
