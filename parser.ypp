@@ -586,8 +586,8 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = "INT";
                                                                                   $$->val =to_string(yylval.val);
                                                                                   $$->print_val = true;
-                                                                                  $$->reg = Generator::new_tmp();
-                                                                                  buffer.emit($$->reg + " = add i32 0, " + to_string(yylval.val));
+                                                                                  //$$->reg = Generator::new_tmp();
+                                                                                  //buffer.emit($$->reg + " = add i32 0, " + to_string(yylval.val));
                                                                               }
                | NUM B                                                        {
                                                                                 CheckLegalB(yylval.val);
@@ -595,8 +595,8 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   parser.ExpType = "BYTE";
                                                                                   $$->val =to_string(yylval.val);
                                                                                   $$->print_val = true;
-                                                                                  $$->reg = Generator::new_tmp();
-                                                                                  buffer.emit($$->reg + " = add i32 0, " + to_string(yylval.val));
+                                                                                  //$$->reg = Generator::new_tmp();
+                                                                                  //buffer.emit($$->reg + " = add i32 0, " + to_string(yylval.val));
                                                                               }
                | STRING                                                       {
                                                                                   $$ = new Exp("STRING");
