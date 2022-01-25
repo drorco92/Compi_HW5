@@ -93,10 +93,7 @@ void TablesList::OpenScope() {
 }
 
 void TablesList::CloseScope() {
-//    output::endScope();
-//    for (Symbol* symbol : this->tables.back()->symbols) {
-//        symbol->print();
-//    }
+
     delete this->tables.back();
     this->tables.pop_back();
     this->offsets.pop();

@@ -268,28 +268,28 @@ ElseScope      :   ELSE N M ScopeStart Statement ScopeEnd                    {
                                                                                   $$ = new Scope(nullptr, $3->label, buffer.merge($2->nextList, $5->nextList), buffer.merge($2->breakList, $5->breakList), buffer.merge($2->continueList, $5->continueList));
                                                                               }
 
-M           :   /* No Action */                                               { $$ = new Label(buffer.genLabel()); }
+M           :   /* No Action */                                               { $$ = new CodeGenLabel(buffer.genLabel()); }
 
 N           :   /* No Action */                                               {
                                                                               int address = buffer.emit("br label @");
-                                                                              $$ = new Block();
+                                                                              $$ = new CodeGenBlock();
                                                                               $$->nextList = CodeBuffer::makelist({address, FIRST});
                                                                             }
 
 Statements     : Statement                                                    {
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                                   $$->nextList = $1->nextList;
                                                                                   $$->breakList = $1->breakList;
                                                                                   $$->continueList = $1->continueList;
                                                                               }
                | Statements Statement                                         {
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                                   $$->nextList = CodeBuffer::merge($1->nextList, $2->nextList);
                                                                                   $$->breakList = CodeBuffer::merge($1->breakList, $2->breakList);
                                                                                   $$->continueList = CodeBuffer::merge($1->continueList, $2->continueList);
                                                                               }
 Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                                   $$->nextList = $3->nextList;
                                                                                   $$->breakList = $3->breakList;
                                                                                   $$->continueList = $3->continueList;
@@ -305,7 +305,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 
                                                                                  buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
                                                                                  buffer.emit("store i32 0, i32* " + ptr);
-                                                                                 $$ = new Block();
+                                                                                 $$ = new CodeGenBlock();
                                                                               }
                | TypeAnnotation Type ID ASSIGN Exp SC                         {
 																				 AssertAssignLegal($2->type, $5->type);
@@ -338,7 +338,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                     }
                                                                                  }
 
-                                                                                 $$ = new Block();
+                                                                                 $$ = new CodeGenBlock();
                                                                               }
                | ID ASSIGN Exp SC                                             {
 																				  if(GetAnnotation($1->name) == "CONST") {
@@ -360,10 +360,10 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                       buffer.emit("store i32 " + $3->reg + ", i32* " + ptr);
                                                                                   }
 
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                               }
                | Call SC                                                      {
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                                   if ($1->type == "BOOL") {
                                                                                       string nextLabel = buffer.genLabel();
                                                                                       buffer.bpatch($1->true_list, nextLabel);
@@ -375,7 +375,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                   return_happened = true;
 
                                                                                   buffer.emit("ret void");
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                               }
                | RETURN Exp SC                                                {
                                                                                   return_happened = true;
@@ -395,12 +395,12 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                       buffer.emit("ret i32 " + $2->reg);
                                                                                   }
                                                                                   return_happened = true;
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                               }
                | IfScope %prec IF
                                                                               {
                                                                                   buffer.bpatch($1->exp->true_list, $1->label);
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                                   $$->breakList = $1->block->breakList;
                                                                                   $$->continueList = $1->block->continueList;
                                                                                   $$->nextList = CodeBuffer::merge($1->exp->false_list, $1->block->nextList);
@@ -414,7 +414,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                 buffer.bpatch($1->exp->false_list, $2->label);
                                                                                 buffer.bpatch($1->exp->true_list, $1->label);
 
-                                                                                $$ = new Block();
+                                                                                $$ = new CodeGenBlock();
                                                                                 $$->breakList = CodeBuffer::merge($1->block->breakList, $2->block->breakList);
                                                                                 $$->continueList = CodeBuffer::merge($1->block->continueList, $2->block->continueList);
                                                                                 $$->nextList = CodeBuffer::merge($1->block->nextList, $2->block->nextList);
@@ -432,7 +432,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                     M Statement
                                                                               {
                                                                                   parser.ExitLoopScope();
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                                   buffer.bpatch($10->continueList, $4->label);
                                                                                   buffer.bpatch($5->true_list, $9->label);
                                                                                   buffer.bpatch($10->nextList, $4->label);
@@ -447,13 +447,13 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                | BREAK SC                                                     {
                                                                                   parser.AssertBreakLegal();
 
-                                                                                      $$ = new Block();
+                                                                                      $$ = new CodeGenBlock();
                                                                                       int address = buffer.emit("br label @");
                                                                                       $$->breakList = CodeBuffer::makelist({address, FIRST});
                                                                                   }
                | CONTINUE SC                                                  {
                                                                                   parser.AssertContinueLegal();
-                                                                                  $$ = new Block();
+                                                                                  $$ = new CodeGenBlock();
                                                                                   int address = buffer.emit("br label @");
                                                                                   $$->continueList = CodeBuffer::makelist({address, FIRST});
                                                                               }
@@ -461,7 +461,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 MarkInIf       : CheckBool
                                                                               {
 
-                                                                                  $$ = new Label(buffer.genLabel());
+                                                                                  $$ = new CodeGenLabel(buffer.genLabel());
                                                                               }
 
 Call           : ID LPAREN ExpList RPAREN                                     {

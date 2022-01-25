@@ -40,7 +40,7 @@ struct Exp {
     }
     Exp(const Exp& exp, const std::string& type) {
         this->name = exp.name;
-        this->type = /*string(type)*/type;
+        this->type = type;
         this->val = exp.val;
     }
 };
@@ -66,120 +66,52 @@ struct ArgumentList {
     }
 };
 
-//struct TypeList {
-//    TypeVector type_vector;
-//    TypeList() = default;
-//};
-
-//struct ExpList {
-//    vector<Exp*> m_exp;
-//    vector<string> m_typeList;
-//
-//    ExpList() {
-//        this->m_exp = vector<Exp*>();
-//        this->m_typeList = vector<string>();
-//    }
-//
-//    friend ostream& operator<<(ostream& os, const ExpList& sl) {
-//        for (auto & it : sl.m_typeList) {
-//            os << it << ", ";
-//        }
-//        os << endl;
-//        return os;
-//    }
-//};
-
-
-
-struct Label {
+struct CodeGenLabel {
     string label;
-    explicit Label(const string& label_name) {
+    explicit CodeGenLabel(const string& label_name) {
         this->label = string(label_name);
     }
 };
 
-struct Block {
-    vector<pair<int,BranchLabelIndex>> nextList;
-    vector<pair<int,BranchLabelIndex>> breakList;
+struct CodeGenBlock {
     vector<pair<int,BranchLabelIndex>> continueList;
-    Block() {
+    vector<pair<int,BranchLabelIndex>> breakList;
+    vector<pair<int,BranchLabelIndex>> nextList;
+    CodeGenBlock() {
+        this->continueList = vector<pair<int,BranchLabelIndex>>();
         this->nextList = vector<pair<int,BranchLabelIndex>>();
         this->breakList = vector<pair<int,BranchLabelIndex>>();
-        this->continueList = vector<pair<int,BranchLabelIndex>>();
     }
 };
 
-struct Scope {
+struct CodeGenScope {
     Exp* exp;
     string label;
-    Block* block;
+    CodeGenBlock* block;
 
-    Scope (Exp* exp, const string& label_name, const vector<pair<int,BranchLabelIndex>>& next_list, const vector<pair<int,BranchLabelIndex>>& break_list, const vector<pair<int,BranchLabelIndex>>& continue_list) {
+    CodeGenScope (Exp* exp, const string& label_name, const vector<pair<int,BranchLabelIndex>>& next_list, const vector<pair<int,BranchLabelIndex>>& break_list, const vector<pair<int,BranchLabelIndex>>& continue_list) {
+        this->exp = nullptr;
         if (exp) {
             this->exp = new Exp(*exp);
-        } else {
-            this->exp = nullptr;
         }
-        this->label = string(label_name);
-        this->block = new Block();
-        this->block->nextList = vector<pair<int,BranchLabelIndex>>(next_list);
-        this->block->breakList = vector<pair<int,BranchLabelIndex>>(break_list);
+        this->block = new CodeGenBlock();
         this->block->continueList = vector<pair<int,BranchLabelIndex>>(continue_list);
+        this->block->breakList = vector<pair<int,BranchLabelIndex>>(break_list);
+        this->block->nextList = vector<pair<int,BranchLabelIndex>>(next_list);
+        this->label = string(label_name);
     }
 };
-
-struct Case
-{
-    Block* statements;
-    string label;
-    int jump_to;
-    int val;
-    Case(int arg_val, string arg_label, const vector<pair<int,BranchLabelIndex>>& next_list, const vector<pair<int,BranchLabelIndex>>& break_list, const vector<pair<int,BranchLabelIndex>>& continue_list) {
-
-        this->statements = new Block();
-        this->statements->nextList = vector<pair<int,BranchLabelIndex>>(next_list);
-        this->statements->breakList = vector<pair<int,BranchLabelIndex>>(break_list);
-        this->statements->continueList = vector<pair<int,BranchLabelIndex>>(continue_list);
-        this->label =arg_label;
-        this->val = arg_val;
-    }
-
-};
-
-struct CaseStack
-{
-    std::stack<Case*> case_stack;
-    Case* default_case;
-    Case* last_case;
-
-    vector<pair<int,BranchLabelIndex>> nextList;
-    CaseStack() {
-        this->default_case = nullptr;
-    }
-    CaseStack(std::stack<Case*> arg_case_stack) {
-        this->case_stack = std::stack<Case*>(arg_case_stack);
-        this->default_case = nullptr;
-
-    }
-
-
-};
-
-
-
-
 
 typedef union Node
 {
     ArgumentList* argument_list;
 	Argument* argument;
-//    ExpList* explist;
 	Exp* exp;
     Id* id;
     int val;
-    Label* label;
-    Block* block;
-    Scope* scope;
+    CodeGenLabel* label;
+    CodeGenBlock* block;
+    CodeGenScope* scope;
     CaseStack* case_stack;
     Case* case_struct;
 } STYPE;
