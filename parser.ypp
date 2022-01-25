@@ -346,7 +346,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                   }
                                                                                   string offset = to_string(parser.symbolTable.GetSymbol($1->name, false)->offset + args_amount);
                                                                                   string ptr = Generator::new_tmp();
-                                                                                  if($3->print_val == true){
+                                                                                  if($3->print_val == true && $3->annotation == "CONST"){
                                                                                         buffer.emit("store i32 " + $3->val + ", i32* " + ptr);
                                                                                   }
                                                                                   else{
@@ -382,7 +382,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 																				  if (parser.ScopeReturnType == "BOOL") {
                                                                                       exp_to_bool($2, buffer);
                                                                                   }
-                                                                                  if($2->print_val == true){
+                                                                                  if($2->print_val == true && $2->annotation == "CONST"){
                                                                                      buffer.emit("ret i32 " + $2->val);
                                                                                   }
                                                                                   else{
@@ -548,7 +548,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$->name = $1->name;
                                                                                   parser.ExpType = GetType($1->name);
 
-                                                                                  if(((Variable*)sym)->to_print == true){
+                                                                                  if(((Variable*)sym)->to_print == true && ((Variable*)sym)->annotation == "CONST"){
                                                                                      $$->print_val = true;
                                                                                      $$->val = ((Variable*)sym)->val;
                                                                                   }
@@ -773,10 +773,10 @@ Exp* ExecuteOperation(Exp* exp1, Exp* exp2, Operation operation, const string& c
 
     string exp1_print = exp1->reg;
     string exp2_print = exp2->reg;
-    if(exp1->print_val) {
+    if(exp1->print_val && exp1->annotation == "CONST") {
         exp1_print = exp1->val;
     }
-    if(exp1->print_val) {
+    if(exp2->print_val && exp2->annotation == "CONST") {
         exp2_print = exp2->val;
     }
 
@@ -966,10 +966,10 @@ void div_handler(Exp* exp1, Exp* exp2, string& reg, CodeBuffer &buffer){
     // first check for a zero div error
     string exp1_print = exp1->reg;
     string exp2_print = exp2->reg;
-    if(exp1->print_val) {
+    if(exp1->print_val && exp1->annotation == "CONST") {
         exp1_print = exp1->val;
     }
-    if(exp1->print_val) {
+    if(exp2->print_val && exp2->annotation == "CONST") {
         exp2_print = exp2->val;
     }
     string cond = Generator::new_tmp();
