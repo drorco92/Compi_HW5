@@ -548,7 +548,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                   $$->name = $1->name;
                                                                                   parser.ExpType = GetType($1->name);
 
-                                                                                  if(((Variable*)sym)->to_print == true && ((Variable*)sym)->annotation == "CONST"){
+                                                                                  if(((Variable*)sym)->to_print == true && ((Variable*)sym)->type_annotation == "CONST"){
                                                                                      $$->print_val = true;
                                                                                      $$->val = ((Variable*)sym)->val;
                                                                                   }
