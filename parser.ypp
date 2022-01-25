@@ -150,13 +150,13 @@
 %right NOT
 %nonassoc RPAREN
 %nonassoc LPAREN
-%nonassoc Exp
-%nonassoc NUM
 
 
-%type<exp> NUM
+//%type<exp> NUM
+%nonassoc<exp> NUM
 %type<id> ID
-%type<exp> Exp
+//%type<exp> Exp
+%nonassoc<exp> Exp
 %type<exp> Type
 %type<exp> RetType
 %type<exp> Call
