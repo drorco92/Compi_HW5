@@ -310,9 +310,10 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                | TypeAnnotation Type ID ASSIGN Exp SC                         {
 																				 AssertAssignLegal($2->type, $5->type);
 																				 bool converted =false;
+																				 int val;
 																				 try{
                                                                                     std::cout << "HEREEE" << std::endl;
-                                                                                    int val = std::stoi($5->val);
+                                                                                    val = std::stoi($5->val);
                                                                                     converted = true;
                                                                                  }
                                                                                  catch(...) {
@@ -320,7 +321,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                  }
                                                                                  if(converted == true && $1->type == "CONST" && ($2->type == "INT" || $2->type == "BYTE") && $5->print_val == true){
                                                                                     std::cout << "IN IF" << val << std::endl;
-                                                                                    parser.symbolTable.AddSymbol($1->type, $3->name, $2->type, $5->val);
+                                                                                    parser.symbolTable.AddSymbol($1->type, $3->name, $2->type, val);
                                                                                  }
                                                                                  else
                                                                                  {
