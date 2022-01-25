@@ -311,6 +311,7 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
 																				 AssertAssignLegal($2->type, $5->type);
 																				 bool converted =false;
 																				 try{
+																				    std::cout << "IN HERE" << std::endl;
                                                                                     int val = std::stoi($5->val);
                                                                                     converted = true;
                                                                                  }
