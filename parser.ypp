@@ -561,7 +561,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                      $$->annotation = "CONST";
                                                                                      $$->print_val = true;
                                                                                      $$->val = ((Variable*)sym)->val;
-                                                                                     $$->reg = $$->val;
+                                                                                     //$$->reg = $$->val;
                                                                                   }
                                                                                   else{
                                                                                       string ptr = Generator::new_tmp();
