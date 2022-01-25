@@ -329,12 +329,11 @@ Statement      : LBRACE ScopeStart Statements RBRACE ScopeEnd                 {
                                                                                     }
                                                                                     string offset = to_string(parser.symbolTable.GetSymbol($3->name, false)->offset + args_amount);
                                                                                     string ptr = Generator::new_tmp();
+                                                                                    buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
                                                                                     if($5->print_val && $5->annotation == "CONST"){
-                                                                                        //std::cout << "VAL IS :" << $5->val << std::endl;
                                                                                         buffer.emit("store i32 " + $5->val + ", i32* " + ptr);
                                                                                     }
                                                                                     else{
-                                                                                        buffer.emit(ptr + " = getelementptr [" + to_string(50 + args_amount) + " x i32], [" + to_string(50 + args_amount) + " x i32]* " + frame_pointer + ", i32 0, i32 " + offset);
                                                                                         buffer.emit("store i32 " + $5->reg + ", i32* " + ptr);
                                                                                     }
                                                                                  }
@@ -561,7 +560,7 @@ Exp            : LPAREN Exp RPAREN                                            {
                                                                                      $$->annotation = "CONST";
                                                                                      $$->print_val = true;
                                                                                      $$->val = ((Variable*)sym)->val;
-                                                                                     //$$->reg = $$->val;
+                                                                                     $$->reg = $$->val;
                                                                                   }
                                                                                   else{
                                                                                       string ptr = Generator::new_tmp();
